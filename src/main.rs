@@ -2,11 +2,17 @@ mod database;
 mod error;
 mod models;
 
+use std::sync::Arc;
+
 use axum::Router;
 use database::repositories::Repositories;
 use tokio::net::TcpListener;
 use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
+
+pub struct AppState {
+    repos: Arc<Repositories>,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), error::Error> {
@@ -23,7 +29,8 @@ async fn main() -> Result<(), error::Error> {
     let db_pool = database::postgres::init_pool().await?;
     database::postgres::run_migrations().await?;
 
-    let repos = Repositories::new(&db_pool);
+    let repos = Arc::new(Repositories::new(&db_pool));
+    let state = Arc::new(AppState { repos });
 
     info!("Running server...");
     let server_host = dotenvy::var("HOST_URL").expect(".env does not contain server host url");
