@@ -3,6 +3,7 @@ mod error;
 mod models;
 
 use axum::Router;
+use database::repositories::Repositories;
 use tokio::net::TcpListener;
 use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
@@ -21,6 +22,8 @@ async fn main() -> Result<(), error::Error> {
 
     let db_pool = database::postgres::init_pool().await?;
     database::postgres::run_migrations().await?;
+
+    let repos = Repositories::new(&db_pool);
 
     info!("Running server...");
     let server_host = dotenvy::var("HOST_URL").expect(".env does not contain server host url");
