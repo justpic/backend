@@ -1,10 +1,10 @@
 mod database;
 mod error;
 mod models;
+mod routes;
 
 use std::sync::Arc;
 
-use axum::Router;
 use database::repositories::Repositories;
 use tokio::net::TcpListener;
 use tracing::info;
@@ -35,7 +35,7 @@ async fn main() -> Result<(), error::Error> {
     info!("Running server...");
     let server_host = dotenvy::var("HOST_URL").expect(".env does not contain server host url");
 
-    let app = Router::new();
+    let app = routes::config().with_state(state);
     let listener = TcpListener::bind(&server_host).await?;
 
     info!("Server listened on [{server_host}]");
