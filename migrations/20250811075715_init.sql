@@ -17,7 +17,7 @@ CREATE TABLE users (
 
 CREATE TABLE sessions (
     session_id      UUID PRIMARY KEY,
-    session_key     VARCHAR(255) UNIQUE,
+    session_key     VARCHAR(255) UNIQUE NOT NULL,
 
     user_id UUID    REFERENCES users(id) ON DELETE CASCADE NOT NULL,
 

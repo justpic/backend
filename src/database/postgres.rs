@@ -1,6 +1,5 @@
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Connection, PgConnection, Pool, Postgres};
-use std::time::Duration;
 use tracing::info;
 
 use crate::database::error::DatabaseError;
@@ -13,14 +12,10 @@ fn get_db_url() -> String {
 
 pub async fn init_pool() -> Result<DbPool, DatabaseError> {
     let url = get_db_url();
-    let lifetime = Duration::from_secs(60 * 30);
 
     info!("Initializing database connection...");
 
-    let pool = PgPoolOptions::new()
-        .max_lifetime(Some(lifetime))
-        .connect(&url)
-        .await?;
+    let pool = PgPoolOptions::new().connect(&url).await?;
     Ok(pool)
 }
 

@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use sqlx::prelude::{FromRow, Type};
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -19,7 +20,8 @@ pub struct User {
     pub nsfw_allowed: bool,
 }
 
-#[derive(Debug, Clone, Type)]
+#[derive(Debug, Clone, Type, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 #[sqlx(type_name = "test", rename_all = "lowercase")]
 pub enum Role {
     Regular,
@@ -54,5 +56,49 @@ impl Role {
             Role::Moderator => "moderator",
             Role::Admin => "admin",
         }
+    }
+
+    pub fn is_moderator(&self) -> bool {
+        match self {
+            Role::Moderator | Role::Admin => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_admin(&self) -> bool {
+        matches!(self, Role::Admin)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Role enum tests
+    #[test]
+    fn test_role_enum_role_checking() {
+        let test_role = Role::Regular;
+
+        // Moderator checking test for regular
+        assert_eq!(test_role.is_moderator(), false);
+
+        // Admin checking test for regular
+        assert_eq!(test_role.is_admin(), false);
+
+        let test_moder_role = Role::Moderator;
+
+        // Moderator checking test for moder
+        assert_eq!(test_role.is_moderator(), true);
+
+        // Admin checking test for moder
+        assert_eq!(test_role.is_admin(), false);
+
+        let test_admin_role = Role::Admin;
+
+        // Moderator checking test for admin
+        assert_eq!(test_role.is_moderator(), true);
+
+        // Admin checking test for admin
+        assert_eq!(test_role.is_admin(), true);
     }
 }

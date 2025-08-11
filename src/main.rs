@@ -6,14 +6,15 @@ mod services;
 
 use std::sync::Arc;
 
-use database::repositories::Repositories;
+use database::{Repositories, redis::Redis};
 use tokio::net::TcpListener;
 use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
 
 #[derive(Debug, Clone)]
 pub struct AppState {
-    pub repos: Arc<Repositories>,
+    pub db: Arc<Repositories>,
+    pub redis: Arc<Redis>,
 }
 
 #[tokio::main]
@@ -31,8 +32,9 @@ async fn main() -> Result<(), error::Error> {
     let db_pool = database::postgres::init_pool().await?;
     database::postgres::run_migrations().await?;
 
-    let repos = Arc::new(Repositories::new(&db_pool));
-    let state = Arc::new(AppState { repos });
+    let db = Arc::new(Repositories::new(&db_pool));
+    let redis = Arc::new(Redis::new().await);
+    let state = Arc::new(AppState { db, redis });
 
     info!("Running server...");
     let server_host = dotenvy::var("HOST_URL").expect(".env does not contain server host url");

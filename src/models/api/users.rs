@@ -48,15 +48,3 @@ impl From<User> for SelfUserOut {
         }
     }
 }
-
-#[derive(Debug, Deserialize, Validate)]
-pub struct UserRegisterDto {
-    #[validate(email)]
-    pub email: String,
-
-    #[validate(length(min = 3, max = 64))]
-    pub username: String,
-
-    #[validate(length(min = 8, max = 224))]
-    pub password: String,
-}

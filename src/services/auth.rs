@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use argon2::{
     Argon2,
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
@@ -12,9 +10,10 @@ use crate::{
     AppState,
     error::Error,
     models::{
-        api::{SelfUserOut, UserRegisterDto},
+        api::SelfUserOut,
         database::{Role, User},
     },
+    routes::v1::auth::UserRegisterDto,
 };
 
 fn create_new_user(email: String, username: String, password_hash: String) -> User {
@@ -52,7 +51,7 @@ pub async fn register(state: &AppState, payload: UserRegisterDto) -> Result<Self
     );
 
     if state
-        .repos
+        .db
         .users
         .check_exist(&payload.username, &payload.email)
         .await?
@@ -67,7 +66,7 @@ pub async fn register(state: &AppState, payload: UserRegisterDto) -> Result<Self
     let password_hash = hash_password(payload.password).await?;
 
     let new_user = create_new_user(payload.email, payload.username, password_hash);
-    state.repos.users.insert(&new_user).await.inspect_err(|e| {
+    state.db.users.insert(&new_user).await.inspect_err(|e| {
         warn!(
             "[reg_id: {}] New user registration failed (Reason: {:?})",
             &register_id[0..8],
