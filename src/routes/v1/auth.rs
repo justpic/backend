@@ -1,16 +1,24 @@
-use std::sync::Arc;
-use axum::extract::State;
-use axum::Router;
-use crate::AppState;
 use crate::error::Error;
-use crate::models::api::SelfUserOut;
+use crate::models::api::{SelfUserOut, UserRegisterDto};
+use crate::{AppState, services};
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::routing::post;
+use axum::{Json, Router};
+use std::sync::Arc;
+use validator::Validate;
 
 pub fn config() -> Router<Arc<AppState>> {
-	Router::new()
+    Router::new().route("/register", post(register))
 }
 
 pub async fn register(
-	State(state): State<Arc<AppState>>
-) -> Result<SelfUserOut, Error> {
-	todo!()
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<UserRegisterDto>,
+) -> Result<(StatusCode, Json<SelfUserOut>), Error> {
+    payload.validate()?;
+
+    let user = services::auth::register(&state, payload).await?;
+
+    Ok((StatusCode::CREATED, Json(user)))
 }

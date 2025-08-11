@@ -11,12 +11,28 @@ use crate::models::api::ErrorOut;
 #[derive(Debug, Display, From, HttpCode)]
 pub enum Error {
     #[code(500)]
-    #[display("IO_ERROR")]
+    #[display("INTERNAL_SERVER_ERROR")]
     Io(#[from] std::io::Error),
 
     #[code(500)]
     #[display("DATABASE_ERROR")]
     Database(#[from] crate::database::error::DatabaseError),
+
+    #[code(400)]
+    #[display("VALIDATION_ERROR")]
+    Validation(#[from] validator::ValidationErrors),
+
+    #[code(500)]
+    #[display("HASHING_ERROR")]
+    Hash(#[from] argon2::password_hash::Error),
+
+    #[code(409)]
+    #[display("CONFLICT")]
+    Conflict,
+
+    #[code(500)]
+    #[display("INTERNAL_SERVER_ERROR")]
+    Multithread(#[from] tokio::task::JoinError),
 }
 
 impl IntoResponse for Error {

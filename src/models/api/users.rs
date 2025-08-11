@@ -1,3 +1,62 @@
-pub struct UserOut {}
+use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
+use uuid::Uuid;
+use validator::Validate;
 
-pub struct SelfUserOut {}
+use crate::models::database::{Role, User};
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct UserOut {
+    pub id: Uuid,
+    pub created: OffsetDateTime,
+    pub username: String,
+    pub avatar_url: Option<String>,
+}
+
+impl From<User> for UserOut {
+    fn from(value: User) -> Self {
+        Self {
+            id: value.id,
+            created: value.created,
+            username: value.username,
+            avatar_url: value.avatar_url,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SelfUserOut {
+    pub id: Uuid,
+    pub created: OffsetDateTime,
+    pub username: String,
+    pub email: String,
+    pub avatar_url: Option<String>,
+    pub email_confirmed: bool,
+    pub nsfw_allowed: bool,
+}
+
+impl From<User> for SelfUserOut {
+    fn from(value: User) -> Self {
+        Self {
+            id: value.id,
+            created: value.created,
+            username: value.username,
+            email: value.email,
+            avatar_url: value.avatar_url,
+            email_confirmed: value.email_confirmed,
+            nsfw_allowed: value.nsfw_allowed,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct UserRegisterDto {
+    #[validate(email)]
+    pub email: String,
+
+    #[validate(length(min = 3, max = 64))]
+    pub username: String,
+
+    #[validate(length(min = 8, max = 224))]
+    pub password: String,
+}

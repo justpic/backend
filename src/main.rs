@@ -2,6 +2,7 @@ mod database;
 mod error;
 mod models;
 mod routes;
+mod services;
 
 use std::sync::Arc;
 
@@ -10,6 +11,7 @@ use tokio::net::TcpListener;
 use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
 
+#[derive(Debug, Clone)]
 pub struct AppState {
     pub repos: Arc<Repositories>,
 }

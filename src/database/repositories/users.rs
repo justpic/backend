@@ -15,11 +15,8 @@ impl UserRepository {
         Self { pool }
     }
 
-    pub async fn insert<T>(&self, item: T) -> Result<(), DatabaseError>
-    where
-        T: Into<User>,
-    {
-        let i: User = item.into();
+    pub async fn insert(&self, item: &User) -> Result<(), DatabaseError> {
+        let i = item;
 
         sqlx::query!(
             "
@@ -43,7 +40,21 @@ impl UserRepository {
         )
         .execute(&self.pool)
         .await?;
-        todo!()
+
+        Ok(())
+    }
+
+    pub async fn check_exist(&self, username: &str, email: &str) -> Result<bool, DatabaseError> {
+        let i = sqlx::query_scalar!(
+            "SELECT id FROM users 
+            WHERE LOWER(username) = $1 OR LOWER(email) = $2",
+            username.to_lowercase(),
+            email.to_lowercase()
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(!i.is_empty())
     }
 
     pub async fn get_by_id<T>(&self, id: &Uuid) -> Result<Option<T>, DatabaseError>
@@ -63,6 +74,18 @@ impl UserRepository {
         T: From<User>,
     {
         let item = sqlx::query_as!(User, "SELECT * FROM users WHERE username = $1", username)
+            .fetch_optional(&self.pool)
+            .await?
+            .map(|i| i.into());
+
+        Ok(item)
+    }
+
+    pub async fn get_by_email<T>(&self, email: &str) -> Result<Option<T>, DatabaseError>
+    where
+        T: From<User>,
+    {
+        let item = sqlx::query_as!(User, "SELECT * FROM users WHERE email = $1", email)
             .fetch_optional(&self.pool)
             .await?
             .map(|i| i.into());
