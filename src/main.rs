@@ -1,5 +1,6 @@
 mod error;
 mod database;
+mod models;
 
 use axum::Router;
 use tokio::net::TcpListener;
@@ -19,7 +20,7 @@ async fn main() -> Result<(), error::Error> {
         .init();
 
     let db_pool = database::postgres::init_pool().await?;
-    // database::postgres::run_migrations().await?;
+    database::postgres::run_migrations().await?;
 
     info!("Running server...");
     let server_host = dotenvy::var("HOST_URL")
