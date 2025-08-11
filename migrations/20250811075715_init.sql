@@ -43,5 +43,5 @@ CREATE TABLE collections (
 
 CREATE TABLE tags (
     id  UUID PRIMARY KEY,
-    tag VARCHAR(255) UNIQUE,
+    tag VARCHAR(255) UNIQUE
 );
