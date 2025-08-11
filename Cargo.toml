@@ -25,6 +25,8 @@ tower-http = {version = "0.6.6", features = ["cors"]}
 uuid = {version = "1.17.0", features = ["v4"]}
 validator = {version = "0.20.0", features = ["derive"]}
 
+frog-utils = {git = "https://github.com/justpic/frog-utils"}
+
 [profile.release]
 opt-level = "s"
 strip = true

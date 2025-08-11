@@ -519,6 +519,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "frog-utils"
+version = "0.1.0"
+source = "git+https://github.com/justpic/frog-utils#b055669d50872b0191668e7d7a46498365177961"
+dependencies = [
+ "frog-utils-macros",
+]
+
+[[package]]
+name = "frog-utils-macros"
+version = "0.1.0"
+source = "git+https://github.com/justpic/frog-utils#b055669d50872b0191668e7d7a46498365177961"
+dependencies = [
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "futures-channel"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -948,6 +965,7 @@ dependencies = [
  "deadpool-redis",
  "derive_more",
  "dotenvy",
+ "frog-utils",
  "rand 0.9.2",
  "redis",
  "serde",

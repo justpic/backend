@@ -11,7 +11,7 @@ use tracing::info;
 use tracing_subscriber::fmt::format::FmtSpan;
 
 pub struct AppState {
-    repos: Arc<Repositories>,
+    pub repos: Arc<Repositories>,
 }
 
 #[tokio::main]
