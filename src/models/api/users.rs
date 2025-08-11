@@ -1,7 +1,3 @@
-pub struct UserOut {
-	
-}
+pub struct UserOut {}
 
-pub struct SelfUserOut {
-	
-}
+pub struct SelfUserOut {}

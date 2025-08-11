@@ -2,23 +2,23 @@ use time::UtcDateTime;
 use uuid::Uuid;
 
 pub struct User {
-	id: Uuid,
-	created: UtcDateTime,
+    id: Uuid,
+    created: UtcDateTime,
 
-	username: String,
-	email: String,
-	password_hash: String,
-	
-	role: Role,
+    username: String,
+    email: String,
+    password_hash: String,
 
-	avatar_url: Option<String>,
+    role: Role,
 
-	email_confirmed: bool,
-	nsfw_allowed: bool
+    avatar_url: Option<String>,
+
+    email_confirmed: bool,
+    nsfw_allowed: bool,
 }
 
 pub enum Role {
-	Regular,
-	Moderator,
-	Admin
+    Regular,
+    Moderator,
+    Admin,
 }

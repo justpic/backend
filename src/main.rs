@@ -1,5 +1,5 @@
-mod error;
 mod database;
+mod error;
 mod models;
 
 use axum::Router;
@@ -23,8 +23,7 @@ async fn main() -> Result<(), error::Error> {
     database::postgres::run_migrations().await?;
 
     info!("Running server...");
-    let server_host = dotenvy::var("HOST_URL")
-        .expect(".env does not contain server host url");
+    let server_host = dotenvy::var("HOST_URL").expect(".env does not contain server host url");
 
     let app = Router::new();
     let listener = TcpListener::bind(&server_host).await?;

@@ -1,2 +1,2 @@
 mod users;
-pub use users::{User, Role};
+pub use users::{Role, User};

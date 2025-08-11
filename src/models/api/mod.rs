@@ -1,2 +1,2 @@
 mod users;
-pub use users::{UserOut, SelfUserOut};
+pub use users::{SelfUserOut, UserOut};
