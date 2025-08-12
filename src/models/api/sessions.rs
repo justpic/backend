@@ -33,6 +33,17 @@ impl From<SessionWithRole> for SessionOut {
     }
 }
 
+impl From<Session> for SessionOut {
+    fn from(value: Session) -> Self {
+        SessionOut {
+            session_id: value.session_id,
+            os: value.os,
+            device: value.device,
+            user_agent: value.user_agent,
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SessionWithRole {
     #[serde(flatten)]

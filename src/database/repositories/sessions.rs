@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 use crate::{database::postgres::DbPool, error::Error, models::database::Session};
 
 #[derive(Debug, Clone)]
@@ -51,6 +53,26 @@ impl SessionsRepository {
         .map(|i| i.into());
 
         Ok(item)
+    }
+
+    pub async fn get_by_user_id<T>(&self, user_id: &Uuid) -> Result<Vec<T>, Error>
+    where
+        T: From<Session>,
+    {
+        let items = sqlx::query_as!(
+            Session,
+            "SELECT * FROM sessions
+            WHERE user_id = $1
+            ",
+            user_id
+        )
+        .fetch_all(&self.pool)
+        .await?
+        .into_iter()
+        .map(|i| i.into())
+        .collect();
+
+        Ok(items)
     }
 
     pub async fn delete_by_key(&self, key: &str) -> Result<(), Error> {

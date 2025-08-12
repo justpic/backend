@@ -75,7 +75,9 @@ async fn hash_password(password: String) -> Result<String, Error> {
 async fn verify_password(pwd: String, hash: String) -> Result<bool, Error> {
     tokio::task::spawn_blocking(move || -> Result<bool, Error> {
         let parsed_hash = PasswordHash::new(&hash)?;
-        let res = Argon2::default().verify_password(pwd.as_bytes(), &parsed_hash).is_ok();
+        let res = Argon2::default()
+            .verify_password(pwd.as_bytes(), &parsed_hash)
+            .is_ok();
 
         Ok(res)
     })
