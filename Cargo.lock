@@ -312,6 +312,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "boar-utils"
+version = "0.1.0"
+source = "git+https://github.com/justpic/boar-utils?branch=master#04a9a12f86719c442caf73dc24b8cf56486dc8ef"
+
+[[package]]
 name = "brotli"
 version = "8.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1048,6 +1053,7 @@ dependencies = [
  "actix-web",
  "argon2",
  "base64",
+ "boar-utils",
  "deadpool-redis",
  "dotenvy",
  "rand 0.9.2",
