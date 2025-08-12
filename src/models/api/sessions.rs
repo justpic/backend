@@ -1,9 +1,19 @@
+use std::sync::Arc;
+
+use axum::{extract::FromRequestParts, http::request::Parts};
+use axum_extra::extract::CookieJar;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::models::database::{Role, Session};
+use crate::{
+    AppState,
+    models::database::{Role, Session},
+};
 
-#[derive(Debug, Deserialize, Serialize)]
+const SESSION_COOKIE_NAME: &str = "user_session";
+const REDIS_SESSION_PREFIX: &str = "session";
+
+#[derive(Debug, Serialize)]
 pub struct SessionOut {
     pub session_id: Uuid,
 
@@ -35,4 +45,29 @@ impl SessionWithRole {
 
 pub struct OptionSession {
     pub item: Option<SessionWithRole>,
+}
+
+impl FromRequestParts<Arc<AppState>> for OptionSession {
+    type Rejection = crate::error::Error;
+
+    async fn from_request_parts(
+        req: &mut Parts,
+        state: &Arc<AppState>,
+    ) -> Result<Self, Self::Rejection> {
+        let jar = CookieJar::from_headers(&req.headers);
+
+        match jar.get(SESSION_COOKIE_NAME) {
+            Some(cookie) => {
+                let session_key = [REDIS_SESSION_PREFIX, cookie.value()].join(":");
+
+                let item = state
+                    .redis
+                    .get_json::<SessionWithRole>(&session_key)
+                    .await?;
+
+                Ok(OptionSession { item })
+            }
+            None => Ok(OptionSession { item: None }),
+        }
+    }
 }

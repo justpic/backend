@@ -14,11 +14,11 @@ impl Redis {
         Redis(pool)
     }
 
-    pub fn get_json<'a, T: Deserialize<'a>>(&self, key: &str) -> Result<T, Error> {
+    pub async fn get_json<'a, T: Deserialize<'a>>(&self, key: &str) -> Result<Option<T>, Error> {
         todo!()
     }
 
-    pub fn set_json<'a, T: Serialize>(
+    pub async fn set_json<'a, T: Serialize>(
         &self,
         key: &str,
         value: &'a T,
