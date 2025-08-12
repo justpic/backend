@@ -156,6 +156,24 @@ pub async fn login(
     Ok((jar.add(cookie), session_with_role.into()))
 }
 
+pub async fn logout(
+    state: &AppState,
+    session: &Session,
+    jar: CookieJar
+) -> Result<CookieJar, Error> {
+    let session_key = &session.session_key;
+    let redis_key = [REDIS_SESSION_PREFIX, session_key].join(":");
+    state.redis.remove(&redis_key).await?;
+    state.db.sessions.delete_by_key(session_key).await?;
+
+    let cookie = Cookie::build((SESSION_COOKIE_NAME, session_key.clone()))
+        .max_age(Duration::days(28))
+        .path("/")
+        .http_only(true);
+
+    Ok(jar.remove(cookie))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

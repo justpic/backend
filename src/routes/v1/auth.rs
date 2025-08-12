@@ -15,6 +15,7 @@ pub fn config() -> Router<Arc<AppState>> {
     Router::new()
         .route("/register", post(register))
         .route("/login", post(login))
+        .route("/logout", post(logout))
 }
 
 #[derive(Debug, Deserialize, Validate)]
@@ -65,6 +66,24 @@ pub async fn login(
     }
     payload.validate()?;
 
-    let session = services::auth::login(&state, payload, jar, user_agent.as_str()).await?;
-    Ok((session.0, Json(session.1)))
+    let (cookie, session) = services::auth::login(&state, payload, jar, user_agent.as_str()).await?;
+    Ok((cookie, Json(session)))
+}
+
+pub async fn logout(
+    State(state): State<Arc<AppState>>,
+    jar: CookieJar,
+    session: OptionSession,
+) -> Result<(CookieJar, StatusCode), Error> {
+    let session = session.item.ok_or(
+        Error::Unauthorized
+    )?.session;
+
+    let jar = services::auth::logout(
+        &state,
+        &session,
+        jar
+    ).await?;
+
+    Ok((jar, StatusCode::NO_CONTENT))
 }

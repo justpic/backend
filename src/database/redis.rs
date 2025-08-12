@@ -34,6 +34,12 @@ impl Redis {
 
         Ok(conn.set_ex(key, &json, ex).await?)
     }
+    
+    pub async fn remove(&self, key: &str) -> Result<(), Error> {
+        let mut conn = self.0.get().await?;
+        
+        Ok(conn.del(key).await?)
+    }
 }
 
 pub async fn init_pool() -> deadpool_redis::Pool {
