@@ -1,9 +1,8 @@
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use uuid::Uuid;
-use validator::Validate;
 
-use crate::models::database::{Role, User};
+use crate::models::database::User;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UserOut {

@@ -1,9 +1,6 @@
 use uuid::Uuid;
 
-use crate::{
-    database::{error::DatabaseError, postgres::DbPool},
-    models::database::User,
-};
+use crate::{database::postgres::DbPool, error::Error, models::database::User};
 
 #[derive(Debug, Clone)]
 pub struct UserRepository {
@@ -15,7 +12,7 @@ impl UserRepository {
         Self { pool }
     }
 
-    pub async fn insert(&self, item: &User) -> Result<(), DatabaseError> {
+    pub async fn insert(&self, item: &User) -> Result<(), Error> {
         let i = item;
 
         sqlx::query!(
@@ -44,7 +41,7 @@ impl UserRepository {
         Ok(())
     }
 
-    pub async fn check_exist(&self, username: &str, email: &str) -> Result<bool, DatabaseError> {
+    pub async fn check_exist(&self, username: &str, email: &str) -> Result<bool, Error> {
         let i = sqlx::query_scalar!(
             "SELECT id FROM users 
             WHERE LOWER(username) = $1 OR LOWER(email) = $2",
@@ -57,7 +54,7 @@ impl UserRepository {
         Ok(!i.is_empty())
     }
 
-    pub async fn get_by_id<T>(&self, id: &Uuid) -> Result<Option<T>, DatabaseError>
+    pub async fn get_by_id<T>(&self, id: &Uuid) -> Result<Option<T>, Error>
     where
         T: From<User>,
     {
@@ -69,7 +66,7 @@ impl UserRepository {
         Ok(item)
     }
 
-    pub async fn get_by_username<T>(&self, username: &str) -> Result<Option<T>, DatabaseError>
+    pub async fn get_by_username<T>(&self, username: &str) -> Result<Option<T>, Error>
     where
         T: From<User>,
     {
@@ -81,7 +78,7 @@ impl UserRepository {
         Ok(item)
     }
 
-    pub async fn get_by_email<T>(&self, email: &str) -> Result<Option<T>, DatabaseError>
+    pub async fn get_by_email<T>(&self, email: &str) -> Result<Option<T>, Error>
     where
         T: From<User>,
     {

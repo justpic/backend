@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 argon2 = { version = "0.5.3", features = ["std"] }
 axum = {version = "0.8.4", features = ["multipart"]}
-axum-extra = {version="0.10.1", features = ["cookie"]}
+axum-extra = {version="0.10.1", features = ["cookie", "typed-header"]}
 base64 = {version = "0.22.1"}
 time = { version = "0.3.41", features = ["serde", "serde-human-readable"] }
 dotenvy = { version = "0.15.7"}

@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use deadpool_redis::{Config, Runtime};
-use serde::{Deserialize, Serialize};
+use redis::AsyncCommands;
+use serde::{Serialize, de::DeserializeOwned};
 
 use crate::error::Error;
 
@@ -14,17 +15,24 @@ impl Redis {
         Redis(pool)
     }
 
-    pub async fn get_json<'a, T: Deserialize<'a>>(&self, key: &str) -> Result<Option<T>, Error> {
-        todo!()
+    pub async fn get_json<T>(&self, key: &str) -> Result<Option<T>, Error>
+    where
+        T: DeserializeOwned,
+    {
+        let mut conn = self.0.get().await?;
+        let raw: Option<String> = conn.get(key).await?;
+
+        Ok(match raw {
+            Some(v) => serde_json::from_str::<T>(&v).ok(),
+            None => None,
+        })
     }
 
-    pub async fn set_json<'a, T: Serialize>(
-        &self,
-        key: &str,
-        value: &'a T,
-        ex: impl Into<usize>,
-    ) -> Result<(), Error> {
-        todo!()
+    pub async fn set_json<T: Serialize>(&self, key: &str, value: &T, ex: u64) -> Result<(), Error> {
+        let json = serde_json::to_string(value)?;
+        let mut conn = self.0.get().await?;
+
+        Ok(conn.set_ex(key, &json, ex).await?)
     }
 }
 

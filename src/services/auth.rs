@@ -1,8 +1,13 @@
 use argon2::{
-    Argon2,
-    password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
+    Argon2, Params, PasswordHash, PasswordVerifier,
+    password_hash::{
+        PasswordHasher, SaltString,
+        rand_core::{OsRng, RngCore},
+    },
 };
-use time::OffsetDateTime;
+use axum_extra::extract::{CookieJar, cookie::Cookie};
+use base64::{Engine, prelude::BASE64_STANDARD};
+use time::{Duration, OffsetDateTime};
 use tracing::{info, warn};
 use uuid::Uuid;
 
@@ -10,10 +15,12 @@ use crate::{
     AppState,
     error::Error,
     models::{
-        api::SelfUserOut,
-        database::{Role, User},
+        api::{
+            REDIS_SESSION_PREFIX, SESSION_COOKIE_NAME, SelfUserOut, SessionOut, SessionWithRole,
+        },
+        database::{Role, Session, User},
     },
-    routes::v1::auth::UserRegisterDto,
+    routes::v1::auth::{LoginDto, UserRegisterDto},
 };
 
 fn create_new_user(email: String, username: String, password_hash: String) -> User {
@@ -30,17 +37,51 @@ fn create_new_user(email: String, username: String, password_hash: String) -> Us
     }
 }
 
+fn generate_session_key() -> String {
+    let mut raw_key = [0; 64];
+    OsRng.fill_bytes(&mut raw_key);
+    BASE64_STANDARD.encode(raw_key)
+}
+
+fn create_new_session(user_id: Uuid, user_agent: Option<String>) -> Session {
+    let now = OffsetDateTime::now_utc();
+
+    Session {
+        session_id: Uuid::new_v4(),
+        session_key: generate_session_key(),
+        user_id,
+        created: now,
+        expires: now + Duration::days(28),
+        os: None,
+        device: None,
+        user_agent,
+    }
+}
+
 async fn hash_password(password: String) -> Result<String, Error> {
     let hashed_password = tokio::task::spawn_blocking(move || {
         let salt = SaltString::generate(&mut OsRng);
-        let argon = Argon2::default();
-        argon
+        let params = Params::new(12 * 1024, 1, 1, Some(32)).unwrap_or(Params::default());
+        let argon2 = Argon2::new(argon2::Algorithm::Argon2id, argon2::Version::V0x13, params);
+        argon2
             .hash_password(password.as_bytes(), &salt)
             .map(|v| v.to_string())
     })
     .await??;
 
     Ok(hashed_password)
+}
+
+async fn verify_password(pwd: String, hash: String) -> Result<bool, Error> {
+    tokio::task::spawn_blocking(move || -> Result<bool, Error> {
+        let parsed_hash = PasswordHash::new(&hash)?;
+        let params = Params::new(12 * 1024, 1, 1, Some(32)).unwrap_or(Params::default());
+        let argon2 = Argon2::new(argon2::Algorithm::Argon2id, argon2::Version::V0x13, params);
+        let res = argon2.verify_password(pwd.as_bytes(), &parsed_hash).is_ok();
+
+        Ok(res)
+    })
+    .await?
 }
 
 pub async fn register(state: &AppState, payload: UserRegisterDto) -> Result<SelfUserOut, Error> {
@@ -78,17 +119,55 @@ pub async fn register(state: &AppState, payload: UserRegisterDto) -> Result<Self
     Ok(new_user.into())
 }
 
+pub async fn login(
+    state: &AppState,
+    payload: LoginDto,
+    jar: CookieJar,
+    user_agent: &str,
+) -> Result<(CookieJar, SessionOut), Error> {
+    let user = state
+        .db
+        .users
+        .get_by_email::<User>(&payload.email)
+        .await?
+        .ok_or(Error::InvalidCredentials)?;
+
+    if !verify_password(payload.password, user.password_hash).await? {
+        return Err(Error::InvalidCredentials);
+    }
+
+    let session = create_new_session(user.id, Some(user_agent.to_string()));
+
+    state.db.sessions.insert(&session).await?;
+
+    let session_with_role = SessionWithRole::from_session_with_role(session, user.role);
+    let session_key = session_with_role.session.session_key.clone();
+    let redis_key = [REDIS_SESSION_PREFIX, &session_key].join(":");
+    state
+        .redis
+        .set_json(&redis_key, &session_with_role, 28 * 24 * 3600)
+        .await?;
+
+    let cookie = Cookie::build((SESSION_COOKIE_NAME, session_key))
+        .max_age(Duration::days(28))
+        .path("/")
+        .http_only(true);
+
+    Ok((jar.add(cookie), session_with_role.into()))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn should_create_new_user() {
+    #[tokio::test]
+    async fn should_create_new_user() {
         let email = "test@example.com".to_string();
         let username = "tester".to_string();
         let password = "hunter42".to_string();
 
-        let user = create_new_user(email.clone(), username.clone(), password.clone());
+        let hashed = hash_password(password.clone()).await.unwrap();
+        let user = create_new_user(email.clone(), username.clone(), hashed.clone());
 
         // Checking username
         assert_eq!(user.username, username);
@@ -97,13 +176,21 @@ mod tests {
         assert_eq!(user.email, email);
 
         // Checking role
-        assert!(matches!(user.role, Role::Regular))
+        assert!(matches!(user.role, Role::Regular));
+
+        // Checking password
+        assert!(verify_password(password, user.password_hash).await.unwrap());
     }
 
     #[tokio::test]
     async fn should_correct_hash_password() {
         let password = "hunter42".to_string();
 
-        let hashed = hash_password(password).await.unwrap();
+        let hashed = hash_password(password.clone()).await.unwrap();
+
+        assert!(verify_password(password, hashed.clone()).await.unwrap());
+
+        let invalid_password = "not_a_hunter".to_string();
+        assert!(!verify_password(invalid_password, hashed).await.unwrap())
     }
 }

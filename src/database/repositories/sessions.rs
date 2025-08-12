@@ -1,7 +1,4 @@
-use crate::{
-    database::{error::DatabaseError, postgres::DbPool},
-    models::database::Session,
-};
+use crate::{database::postgres::DbPool, error::Error, models::database::Session};
 
 #[derive(Debug, Clone)]
 pub struct SessionsRepository {
@@ -13,7 +10,7 @@ impl SessionsRepository {
         Self { pool }
     }
 
-    pub async fn insert(&self, item: &Session) -> Result<(), DatabaseError> {
+    pub async fn insert(&self, item: &Session) -> Result<(), Error> {
         let i = item;
 
         sqlx::query!(
@@ -40,7 +37,7 @@ impl SessionsRepository {
         Ok(())
     }
 
-    pub async fn get_by_key<T>(&self, key: &str) -> Result<Option<T>, DatabaseError>
+    pub async fn get_by_key<T>(&self, key: &str) -> Result<Option<T>, Error>
     where
         T: From<Session>,
     {
@@ -56,7 +53,7 @@ impl SessionsRepository {
         Ok(item)
     }
 
-    pub async fn delete_by_key(&self, key: &str) -> Result<(), DatabaseError> {
+    pub async fn delete_by_key(&self, key: &str) -> Result<(), Error> {
         sqlx::query!(
             "
 			DELETE FROM sessions

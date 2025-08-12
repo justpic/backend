@@ -10,8 +10,8 @@ use crate::{
     models::database::{Role, Session},
 };
 
-const SESSION_COOKIE_NAME: &str = "user_session";
-const REDIS_SESSION_PREFIX: &str = "session";
+pub const SESSION_COOKIE_NAME: &str = "user_session";
+pub const REDIS_SESSION_PREFIX: &str = "session";
 
 #[derive(Debug, Serialize)]
 pub struct SessionOut {
@@ -20,6 +20,17 @@ pub struct SessionOut {
     pub os: Option<String>,
     pub device: Option<String>,
     pub user_agent: Option<String>,
+}
+
+impl From<SessionWithRole> for SessionOut {
+    fn from(value: SessionWithRole) -> Self {
+        SessionOut {
+            session_id: value.session.session_id,
+            os: value.session.os,
+            device: value.session.device,
+            user_agent: value.session.user_agent,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]

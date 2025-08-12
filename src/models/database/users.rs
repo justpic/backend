@@ -50,7 +50,7 @@ impl Role {
         }
     }
 
-    pub fn as_str<'a>(&self) -> &'a str {
+    pub const fn as_str<'a>(&self) -> &'a str {
         match self {
             Role::Regular => "regular",
             Role::Moderator => "moderator",
@@ -58,14 +58,14 @@ impl Role {
         }
     }
 
-    pub fn is_moderator(&self) -> bool {
+    pub const fn is_moderator(&self) -> bool {
         match self {
             Role::Moderator | Role::Admin => true,
             _ => false,
         }
     }
 
-    pub fn is_admin(&self) -> bool {
+    pub const fn is_admin(&self) -> bool {
         matches!(self, Role::Admin)
     }
 }
@@ -76,7 +76,7 @@ mod tests {
 
     // Role enum tests
     #[test]
-    fn test_role_enum_role_checking() {
+    fn test_role_checking() {
         let test_role = Role::Regular;
 
         // Moderator checking test for regular
@@ -88,17 +88,24 @@ mod tests {
         let test_moder_role = Role::Moderator;
 
         // Moderator checking test for moder
-        assert_eq!(test_role.is_moderator(), true);
+        assert_eq!(test_moder_role.is_moderator(), true);
 
         // Admin checking test for moder
-        assert_eq!(test_role.is_admin(), false);
+        assert_eq!(test_moder_role.is_admin(), false);
 
         let test_admin_role = Role::Admin;
 
         // Moderator checking test for admin
-        assert_eq!(test_role.is_moderator(), true);
+        assert_eq!(test_admin_role.is_moderator(), true);
 
         // Admin checking test for admin
-        assert_eq!(test_role.is_admin(), true);
+        assert_eq!(test_admin_role.is_admin(), true);
+    }
+
+    #[test]
+    fn test_role_from_string() {
+        let role_str = "regular";
+
+        assert!(matches!(Role::from_string(role_str), Role::Regular))
     }
 }

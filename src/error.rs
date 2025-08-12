@@ -16,7 +16,15 @@ pub enum Error {
 
     #[code(500)]
     #[display("DATABASE_ERROR")]
-    Database(#[from] crate::database::error::DatabaseError),
+    Sqlx(#[from] sqlx::error::Error),
+
+    #[code(500)]
+    #[display("DATABASE_ERROR")]
+    RedisPool(#[from] deadpool_redis::PoolError),
+
+    #[code(500)]
+    #[display("DATABASE_ERROR")]
+    Redis(#[from] redis::RedisError),
 
     #[code(400)]
     #[display("VALIDATION_ERROR")]
@@ -29,6 +37,14 @@ pub enum Error {
     #[code(409)]
     #[display("CONFLICT")]
     Conflict,
+
+    #[code(500)]
+    #[display("JSON_PARSE_ERROR")]
+    Serde(#[from] serde_json::Error),
+
+    #[code(400)]
+    #[display("INVALID_AUTHENTICATION_CREDENTIALS")]
+    InvalidCredentials,
 
     #[code(500)]
     #[display("INTERNAL_SERVER_ERROR")]
