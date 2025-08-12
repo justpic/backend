@@ -61,7 +61,7 @@ fn create_new_session(user_id: Uuid, user_agent: Option<String>) -> Session {
 async fn hash_password(password: String) -> Result<String, Error> {
     let hashed_password = tokio::task::spawn_blocking(move || {
         let salt = SaltString::generate(&mut OsRng);
-        let params = Params::new(12 * 1024, 1, 1, Some(32)).unwrap_or(Params::default());
+        let params = Params::new(8 * 1024, 2, 1, Some(32)).unwrap();
         let argon2 = Argon2::new(argon2::Algorithm::Argon2id, argon2::Version::V0x13, params);
         argon2
             .hash_password(password.as_bytes(), &salt)
@@ -75,9 +75,7 @@ async fn hash_password(password: String) -> Result<String, Error> {
 async fn verify_password(pwd: String, hash: String) -> Result<bool, Error> {
     tokio::task::spawn_blocking(move || -> Result<bool, Error> {
         let parsed_hash = PasswordHash::new(&hash)?;
-        let params = Params::new(12 * 1024, 1, 1, Some(32)).unwrap_or(Params::default());
-        let argon2 = Argon2::new(argon2::Algorithm::Argon2id, argon2::Version::V0x13, params);
-        let res = argon2.verify_password(pwd.as_bytes(), &parsed_hash).is_ok();
+        let res = Argon2::default().verify_password(pwd.as_bytes(), &parsed_hash).is_ok();
 
         Ok(res)
     })

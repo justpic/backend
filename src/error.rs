@@ -5,7 +5,7 @@ use axum::{
 };
 use derive_more::{Display, From};
 use frog_utils::macros::HttpCode;
-
+use tracing::warn;
 use crate::models::api::ErrorOut;
 
 #[derive(Debug, Display, From, HttpCode)]
@@ -46,13 +46,23 @@ pub enum Error {
     #[display("INVALID_AUTHENTICATION_CREDENTIALS")]
     InvalidCredentials,
 
+    #[code(401)]
+    #[display("UNAUTHORIZED")]
+    Unauthorized,
+
     #[code(500)]
     #[display("INTERNAL_SERVER_ERROR")]
     Multithread(#[from] tokio::task::JoinError),
+
+    #[code(404)]
+    #[display("NOT_FOUND")]
+    NotFound,
 }
 
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
+        warn!("{:?}", self);
+
         let status_code =
             StatusCode::from_u16(self.http_code()).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
 
