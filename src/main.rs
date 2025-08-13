@@ -1,6 +1,8 @@
 pub mod database;
 pub mod redis;
 
+pub mod error;
+
 // Api modules
 pub mod auth;
 pub mod users;

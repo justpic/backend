@@ -1055,6 +1055,7 @@ dependencies = [
  "base64",
  "boar-utils",
  "deadpool-redis",
+ "derive_more",
  "dotenvy",
  "rand 0.9.2",
  "redis",
