@@ -1,12 +1,14 @@
+use actix_web::web;
 use sqlx::Postgres;
 use tracing::info;
 
-pub struct AppConfig {
+#[derive(Debug, Clone)]
+pub struct AppState {
     pub pool: sqlx::Pool<Postgres>,
     pub redis_pool: deadpool_redis::Pool,
 }
 
-fn init_tracing() {
+pub fn init_tracing() {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .with_target(true)
@@ -15,10 +17,12 @@ fn init_tracing() {
         .init();
 }
 
-pub fn setup(pool: sqlx::Pool<Postgres>, redis_pool: deadpool_redis::Pool) -> AppConfig {
-    init_tracing();
-
+pub fn setup(pool: sqlx::Pool<Postgres>, redis_pool: deadpool_redis::Pool) -> AppState {
     info!("Running justpic-server");
 
-    AppConfig { pool, redis_pool }
+    AppState { pool, redis_pool }
+}
+
+pub fn config(cfg: &mut web::ServiceConfig, state: AppState) {
+    cfg.app_data(web::Data::new(state));
 }
