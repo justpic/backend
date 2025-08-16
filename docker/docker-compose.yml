@@ -1,0 +1,27 @@
+name: justpic
+
+volumes:
+  pg_data:
+  redis_data:
+
+services:
+  postgres-service:
+    container_name: postgres-service
+    image: postgres:17.6-alpine
+    ports:
+      - 5433:5432
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+      POSTGRES_DB: ${DATABASE_NAME}
+
+  redis-service:
+    container_name: redis-service
+    image: redis:7.2.7-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    command: redis-server --requirepass ${REDIS_PASS}
