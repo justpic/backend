@@ -1,29 +1,19 @@
 [package]
-name = "justpic-result"
+name = "justpic-models"
 edition = "2024"
 version = "0.1.0"
 
 [dependencies]
-actix-web.workspace = true
-
-sqlx = {workspace = true, features = ["postgres"]}
-
-deadpool-redis.workspace = true
-redis = {workspace = true, features = ["tokio-comp"]}
-
-dotenvy.workspace = true
-
 serde = {workspace = true, features = ["derive"]}
 serde_json.workspace = true
 
 time = { workspace = true, features = ["serde", "serde-human-readable"] }
 
-argon2 = { workspace = true, features = ["std"] }
+tracing.workspace = true
 
-rand.workspace = true
 uuid = {workspace = true, features = ["v4", "serde"]}
-
-base64.workspace = true
 
 derive_more = {workspace = true, features = ["from", "display"]}
 validator = {workspace = true, features = ["derive"]}
+
+utoipa = {workspace = true, features = ["actix_extras"]}

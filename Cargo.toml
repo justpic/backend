@@ -26,6 +26,10 @@ validator = "0.19"
 
 boar-utils = {git = "https://github.com/justpic/boar-utils", branch = "master"}
 
+# Docs
+utoipa = "5.4.0"
+utoipa-swagger-ui = "9.0.2"
+
 [profile.release]
 opt-level = "s"
 strip = true

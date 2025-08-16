@@ -1,7 +1,11 @@
 use deadpool_redis::{Config, Runtime};
 use tracing::info;
 
-pub async fn init_pool() -> deadpool_redis::Pool {
+/// ### Redis Connection Pool
+pub type Pool = deadpool_redis::Pool;
+
+/// ### Initializing a Redis Connection Pool
+pub async fn init_pool() -> Pool {
     info!("Initializing the Redis connection pool");
     let url = dotenvy::var("REDIS_URL").expect(".env file does not contain 'REDIS_URL'");
 

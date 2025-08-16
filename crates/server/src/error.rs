@@ -1,30 +1,33 @@
 use actix_web::http::StatusCode;
 use derive_more::{Display, From};
 
-#[derive(Debug, From, Display)]
+#[derive(Debug, Display, From)]
 pub enum Error {
-    // General errors
-    #[display("DATABASE_ERROR")]
-    DatabaseError(#[from] sqlx::Error),
+    DatabaseError(#[from] justpic_database::DatabaseError),
 
-    #[display("JSON_PARSE_ERROR")]
-    JsonError(#[from] serde_json::Error),
+    HashError(#[from] argon2::password_hash::Error),
 
-    #[display("INTERNAL_SERVER_ERROR")]
+    MultithreadError(#[from] tokio::task::JoinError),
+
+    JsonError,
+
     InternalError,
 
-    #[display("NOT_FOUND")]
     NotFound,
 
-    #[display("VALIDATION_ERROR: {_0}")]
-    ValidationError(#[from] validator::ValidationErrors),
+    AlreadyExists,
+
+    ValidationError(#[from] justpic_models::ValidationError),
 }
+
+pub type Result<T> = std::result::Result<T, Error>;
 
 impl actix_web::error::ResponseError for Error {
     fn status_code(&self) -> actix_web::http::StatusCode {
         match self {
             Error::ValidationError(..) => StatusCode::BAD_REQUEST,
             Error::NotFound => StatusCode::NOT_FOUND,
+            Error::AlreadyExists => StatusCode::CONFLICT,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

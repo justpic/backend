@@ -1,16 +1,22 @@
-use sqlx::{
-    Connection, PgConnection, PgPool, Postgres, migrate::MigrateDatabase, postgres::PgPoolOptions,
-};
+use crate::DbResult;
+use sqlx::{Connection, PgConnection, Postgres, migrate::MigrateDatabase, postgres::PgPoolOptions};
 use tracing::info;
 
-pub async fn init_pool() -> sqlx::Result<PgPool> {
+/// ### Postgres Connection Pool
+pub type Pool = sqlx::PgPool;
+
+/// ### Initialize the database connection pool
+pub async fn init_pool() -> DbResult<Pool> {
     info!("Initializing the Postgres connection pool...");
     let url = dotenvy::var("DATABASE_URL").expect(".env file does not contain 'DATABASE_URL'");
 
-    PgPoolOptions::new().connect(&url).await
+    let pool = PgPoolOptions::new().connect(&url).await?;
+    Ok(pool)
 }
 
-pub async fn apply_migrations() -> sqlx::Result<()> {
+/// ### Apply migrations to the database
+/// Migrations are taken from the `/migrations` folder in the root directory
+pub async fn apply_migrations() -> DbResult<()> {
     info!("Launching database migrations...");
     let url = dotenvy::var("DATABASE_URL").expect(".env file does not contain 'DATABASE_URL'");
     let url = url.as_str();

@@ -1,18 +1,21 @@
 use actix_web::{App, HttpServer, web};
-use justpic_database;
-use justpic_result::Error;
+use justpic_database::{postgres, redis};
 use tracing::info;
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
+mod docs;
+mod error;
 mod routes;
 
 #[derive(Debug, Clone)]
 pub struct AppState {
-    pub pool: sqlx::PgPool,
-    pub redis_pool: deadpool_redis::Pool,
+    pub pool: postgres::Pool,
+    pub redis_pool: redis::Pool,
 }
 
 impl AppState {
-    pub fn new(pool: sqlx::PgPool, redis_pool: deadpool_redis::Pool) -> Self {
+    pub fn new(pool: postgres::Pool, redis_pool: redis::Pool) -> Self {
         info!("AppState initialized");
         AppState { pool, redis_pool }
     }
@@ -30,15 +33,15 @@ async fn main() -> std::io::Result<()> {
 
     dotenvy::dotenv().ok();
 
-    let pool = justpic_database::postgres::init_pool()
+    let pool = postgres::init_pool()
         .await
         .expect("Database connection failed");
 
-    justpic_database::postgres::apply_migrations()
+    postgres::apply_migrations()
         .await
         .expect("An error occurred while running migrations");
 
-    let redis = justpic_database::redis::init_pool().await;
+    let redis = redis::init_pool().await;
 
     let state = AppState::new(pool, redis);
 
@@ -47,6 +50,10 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(state.pool.clone()))
             .app_data(web::Data::new(state.redis_pool.clone()))
+            .service(
+                SwaggerUi::new("/docs/{_:.*}")
+                    .url("/api-docs/openapi.json", docs::ApiDoc::openapi()),
+            )
             .configure(routes::config)
     })
     .bind(dotenvy::var("HOST_URL").unwrap())?

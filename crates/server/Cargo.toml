@@ -5,35 +5,27 @@ version = "0.1.0"
 
 [dependencies]
 justpic-database = {path = "../core/database"}
-justpic-result = {path = "../core/result"}
+justpic-models = {path = "../core/models"}
 
 actix-web.workspace = true
 
 tokio = {workspace = true, features = ["sync", "rt-multi-thread", "macros"]}
 
-sqlx = {workspace = true, features = ["runtime-tokio", "postgres", "macros", "time", "uuid"]}
-
-deadpool-redis.workspace = true
-redis = {workspace = true, features = ["tokio-comp"]}
-
 dotenvy.workspace = true
 
-serde = {workspace = true, features = ["derive"]}
-serde_json.workspace = true
-
-time = { workspace = true, features = ["serde", "serde-human-readable"] }
+# time = { workspace = true, features = ["serde", "serde-human-readable"] }
 
 tracing.workspace = true
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 
 argon2 = { workspace = true, features = ["std"] }
 
-rand.workspace = true
-uuid = {workspace = true, features = ["v4", "serde"]}
+# rand.workspace = true
+# uuid = {workspace = true, features = ["v4", "serde"]}
 
-base64.workspace = true
-
-boar-utils.workspace = true
+# base64.workspace = true
 
 derive_more = {workspace = true, features = ["from", "display"]}
-validator = {workspace = true, features = ["derive"]}
+
+utoipa = {workspace = true, features = ["actix_extras"]}
+utoipa-swagger-ui = {workspace = true, features = ["actix-web"]}
