@@ -6,7 +6,7 @@ use argon2::password_hash::SaltString;
 use argon2::password_hash::rand_core::OsRng;
 use argon2::{Argon2, Params, PasswordHasher};
 
-use justpic_database::models::users::User;
+use justpic_database::models::users::DbUser;
 use justpic_database::postgres;
 
 use justpic_models::Validate;
@@ -21,9 +21,9 @@ use crate::error::{Error, Result};
 	request_body = RegisterDto, 
 	tag = "auth",
 	responses(
-    (status = 201, description = "User created"),
-    (status = 409, description = "Already exists")
-  )
+        (status = 201, description = "User created"),
+        (status = 409, description = "Already exists")
+    )
 )]
 #[post("/register")]
 pub async fn register(
@@ -33,15 +33,15 @@ pub async fn register(
     let payload = payload.into_inner();
     payload.validate()?;
 
-    if User::get_by_username(&payload.username, &pool).await?.is_some()
-        || User::get_by_email(&payload.email, &pool).await?.is_some()
+    if DbUser::get_by_username(&payload.username, &pool).await?.is_some()
+        || DbUser::get_by_email(&payload.email, &pool).await?.is_some()
     {
         return Err(Error::AlreadyExists);
     }
 
     let password_hash = hash_password(payload.password).await?;
 
-    let new_user = User::new(
+    let new_user = DbUser::new(
         payload.email,
         payload.display_name,
         password_hash,

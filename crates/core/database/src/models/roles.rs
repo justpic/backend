@@ -32,4 +32,12 @@ impl Role {
             Role::Admin => "admin",
         }
     }
+
+    pub fn is_admin(&self) -> bool {
+        matches!(self, Role::Admin)
+    }
+
+    pub fn is_moder(&self) -> bool {
+        matches!(self, Role::Admin | Role::Moderator)
+    }
 }

@@ -1,9 +1,10 @@
 use actix_web::{App, HttpServer, web};
-use justpic_database::{postgres, redis};
+use justpic_database::{models::sessions::DbSession, postgres, redis};
 use tracing::info;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
+mod auth;
 mod docs;
 mod error;
 mod routes;

@@ -8,9 +8,9 @@ use super::roles::Role;
 
 type Result<T> = DbResult<T>;
 
-/// ## User model
+/// ## User database model
 #[derive(FromRow, Clone, Debug)]
-pub struct User {
+pub struct DbUser {
     /// Unique user id
     pub id: Uuid,
 
@@ -39,16 +39,16 @@ pub struct User {
     pub created: OffsetDateTime,
 }
 
-impl User {
-    /// Create a new [`User`]
-    pub fn new<T>(email: T, display_name: T, password_hash: T, username: T) -> User
+impl DbUser {
+    /// Create a new [`DbUser`]
+    pub fn new<T>(email: T, display_name: T, password_hash: T, username: T) -> DbUser
     where
         T: Into<String>,
     {
         let username = process_username(username);
         debug!("Creating new user [username: {}]", username);
 
-        User {
+        DbUser {
             id: Uuid::new_v4(),
             email: email.into(),
             password: password_hash.into(),
@@ -61,7 +61,7 @@ impl User {
         }
     }
 
-    /// Insert [`User`] into database
+    /// Insert [`DbUser`] into database
     pub async fn insert(&self, pool: &PgPool) -> Result<()> {
         debug!("Inserting user in db [uid: {}]", self.id);
 
@@ -90,45 +90,45 @@ impl User {
         Ok(())
     }
 
-    /// Get [`User`] by ID
-    pub async fn get_by_id<T>(id: T, pool: &PgPool) -> Result<Option<User>>
+    /// Get [`DbUser`] by ID
+    pub async fn get_by_id<T>(id: T, pool: &PgPool) -> Result<Option<DbUser>>
     where
         T: Into<Uuid>,
     {
         let id: Uuid = id.into();
         debug!("Fetching user by id [uid: {}]", id);
 
-        let item = sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", id)
+        let item = sqlx::query_as!(DbUser, "SELECT * FROM users WHERE id = $1", id)
             .fetch_optional(pool)
             .await?;
 
         Ok(item)
     }
 
-    /// Get [`User`] by Username
-    pub async fn get_by_username<T>(username: T, pool: &PgPool) -> Result<Option<User>>
+    /// Get [`DbUser`] by Username
+    pub async fn get_by_username<T>(username: T, pool: &PgPool) -> Result<Option<DbUser>>
     where
         T: Into<String>,
     {
         let username = process_username(username);
         debug!("Fetching user by username [username: {}]", username);
 
-        let item = sqlx::query_as!(User, "SELECT * FROM users WHERE username = $1", username)
+        let item = sqlx::query_as!(DbUser, "SELECT * FROM users WHERE username = $1", username)
             .fetch_optional(pool)
             .await?;
 
         Ok(item)
     }
 
-    /// Get [`User`] by Email
-    pub async fn get_by_email<T>(email: T, pool: &PgPool) -> Result<Option<User>>
+    /// Get [`DbUser`] by Email
+    pub async fn get_by_email<T>(email: T, pool: &PgPool) -> Result<Option<DbUser>>
     where
         T: Into<String>,
     {
         let email = email.into();
         debug!("Fetching user by email [email: {}]", email);
 
-        let item = sqlx::query_as!(User, "SELECT * FROM users WHERE email = $1", email)
+        let item = sqlx::query_as!(DbUser, "SELECT * FROM users WHERE email = $1", email)
             .fetch_optional(pool)
             .await?;
 
@@ -164,7 +164,7 @@ mod tests {
         let d_name = "John Doe";
         let p_hash = "hunter42";
 
-        let user = User::new(email, d_name, p_hash, username);
+        let user = DbUser::new(email, d_name, p_hash, username);
 
         assert_eq!(user.username, process_username(username));
 

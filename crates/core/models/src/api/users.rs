@@ -2,7 +2,7 @@ use serde::Deserialize;
 use utoipa::ToSchema;
 use validator::Validate;
 
-/// ### User register DTO
+/// User register DTO
 #[derive(Clone, Deserialize, Validate, ToSchema)]
 pub struct RegisterDto {
     #[schema(example = "user@example.com")]

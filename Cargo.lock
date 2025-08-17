@@ -1125,9 +1125,13 @@ dependencies = [
 name = "justpic-database"
 version = "0.1.0"
 dependencies = [
+ "argon2",
+ "base64",
  "deadpool-redis",
  "derive_more",
  "dotenvy",
+ "serde",
+ "serde_json",
  "sqlx",
  "time",
  "tracing",

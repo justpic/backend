@@ -3,6 +3,10 @@ name: justpic
 volumes:
   pg_data:
   redis_data:
+  redis_ui_data:
+
+networks:
+  redis:
 
 services:
   postgres-service:
@@ -20,8 +24,20 @@ services:
   redis-service:
     container_name: redis-service
     image: redis:7.2.7-alpine
+    networks: 
+      - redis
     ports:
       - 6379:6379
     volumes:
       - redis_data:/data
     command: redis-server --requirepass ${REDIS_PASS}
+
+  redis-web-gui-service:
+    container_name: redis-gui-service
+    image: redis/redisinsight:2.70
+    networks: 
+      - redis
+    ports:
+      - 5540:5540
+    volumes:
+      - redis_ui_data:/data

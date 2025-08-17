@@ -1,0 +1,11 @@
+CREATE TABLE sessions (
+	id	UUID	PRIMARY KEY,
+	user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+
+	session_key VARCHAR(1024) UNIQUE NOT NULL,
+
+	created TIMESTAMPTZ NOT NULL,
+  expires TIMESTAMPTZ NOT NULL,
+
+	user_agent VARCHAR(1024)
+);
