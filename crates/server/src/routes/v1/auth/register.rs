@@ -1,5 +1,5 @@
 use actix_web::web::Json;
-use actix_web::{HttpResponse, post, web};
+use actix_web::{post, web, HttpRequest, HttpResponse};
 use argon2::Algorithm::Argon2id;
 use argon2::Version::V0x13;
 use argon2::password_hash::SaltString;
@@ -7,11 +7,12 @@ use argon2::password_hash::rand_core::OsRng;
 use argon2::{Argon2, Params, PasswordHasher};
 
 use justpic_database::models::users::DbUser;
-use justpic_database::postgres;
+use justpic_database::{postgres, redis};
 
 use justpic_models::Validate;
 use justpic_models::api::users::RegisterDto;
 
+use crate::auth::extract;
 use crate::error::{Error, Result};
 
 /// Register endpoint
@@ -27,12 +28,18 @@ use crate::error::{Error, Result};
 )]
 #[post("/register")]
 pub async fn register(
+    req: HttpRequest,
     pool: web::Data<postgres::Pool>,
+    redis_pool: web::Data<redis::Pool>,
     payload: Json<RegisterDto>,
 ) -> Result<HttpResponse> {
+    // Throw error if user try to register new account with active session
+    extract::throw_err_if_client_has_active_session(&req, &redis_pool).await?;
+
     let payload = payload.into_inner();
     payload.validate()?;
 
+    // Todo: заменить на один запрос к базе
     if DbUser::get_by_username(&payload.username, &pool).await?.is_some()
         || DbUser::get_by_email(&payload.email, &pool).await?.is_some()
     {
@@ -54,14 +61,11 @@ pub async fn register(
 }
 
 /// Hash user password using the Argon2-algorithm
-async fn hash_password<T>(raw: T) -> Result<String>
-where
-    T: Into<String>,
-{
-    let password_str = raw.into();
+async fn hash_password(raw: impl AsRef<str>) -> Result<String> {
+    let password_str = raw.as_ref().to_string();
     let task = tokio::task::spawn_blocking(move || {
         let salt = SaltString::generate(&mut OsRng);
-        let params = Params::new(10 * 1024, 2, 1, None).unwrap();
+        let params = Params::new(32 * 1024, 3, 2, None).unwrap();
         let argon2 = Argon2::new(Argon2id, V0x13, params);
 
         argon2
@@ -80,7 +84,9 @@ mod tests {
     async fn test_password_hashing() {
         let test_pass = "hunter42";
 
-        hash_password(test_pass).await.unwrap();
+        let hashed = hash_password(test_pass).await.unwrap();
+
+        assert!(test_pass != hashed)
     }
 
     #[test]
@@ -93,5 +99,6 @@ mod tests {
         };
 
         assert!(test_dto.validate().is_err());
+
     }
 }

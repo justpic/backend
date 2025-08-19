@@ -23,7 +23,7 @@ pub enum Error {
 
     Forbidden,
 
-    InvalidCredentionals,
+    InvalidCredentials,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -31,7 +31,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 impl actix_web::error::ResponseError for Error {
     fn status_code(&self) -> actix_web::http::StatusCode {
         match self {
-            Error::ValidationError(..) | Error::InvalidCredentionals => StatusCode::BAD_REQUEST,
+            Error::ValidationError(..) | Error::InvalidCredentials => StatusCode::BAD_REQUEST,
             Error::NotFound => StatusCode::NOT_FOUND,
             Error::AlreadyExists => StatusCode::CONFLICT,
             Error::Unauthorized => StatusCode::UNAUTHORIZED,

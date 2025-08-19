@@ -1,12 +1,12 @@
 use actix_web::{
-    cookie::{time::Duration, Cookie}, post, web::{self, Json}, HttpMessage, HttpRequest, HttpResponse, Responder
+    cookie::Cookie, post, web::{self, Json}, HttpRequest, HttpResponse, Responder
 };
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use justpic_database::{models::{sessions::{DbSession, SESSION_TTL_INT}, users::DbUser}, postgres, redis};
+use justpic_database::{models::{sessions::DbSession, users::DbUser}, postgres, redis};
 use justpic_models::{api::auth::LoginDto, Validate};
 
 use crate::{
-    auth::extract::SESSION_COOKIE_NAME,
+    auth::extract::{self, SESSION_COOKIE_NAME},
     error::{Error, Result},
 };
 
@@ -24,28 +24,39 @@ pub async fn login(
     redis_pool: web::Data<redis::Pool>,
     payload: Json<LoginDto>,
 ) -> Result<impl Responder> {
+    // Throw error if user try to login with active session
+    extract::throw_err_if_client_has_active_session(&req, &redis_pool).await?;
+
+    // Extract and validate request payload
     let payload = payload.into_inner();
     payload.validate()?;
 
-    let user_to_login = DbUser::get_by_email(payload.email, &pool).await?.ok_or(Error::InvalidCredentionals)?;
+    // Getting user for login
+    let user_to_login = DbUser::get_by_email(payload.email, &pool).await?.ok_or(Error::InvalidCredentials)?;
 
+    // Validating password
     if !validate_password(payload.password, user_to_login.password.clone()).await? {
-        return Err(Error::InvalidCredentionals);
+        return Err(Error::InvalidCredentials);
     }
 
-    let ua = req.headers()
+    // Getting user-agent from request headers
+    let ua = req
+        .headers()
         .get("User-Agent")
-        .map(|v| v.to_str().ok())
-        .ok_or(Error::Forbidden)?;
+        .and_then(|v| v.to_str().ok());
 
+    // Creating new session
     let session = DbSession::new(&user_to_login, ua);
 
+    // Saving created session
     session.insert(&pool).await?;
     session.save_in_cache(&redis_pool).await?;
 
+    // Creating session cookie
     let cookie = Cookie::build(SESSION_COOKIE_NAME, session.session_key)
         .path("/")
         .http_only(true)
+        // .secure(true)
         .expires(session.expires)
         .finish();
 
@@ -53,12 +64,9 @@ pub async fn login(
 }
 
 /// Validates the entered password by comparing the password with its hash
-async fn validate_password<T>(pwd: T, hash: T) -> Result<bool>
-where 
-    T:Into<String>
-{
-    let pwd: String = pwd.into();
-    let hash: String = hash.into();
+async fn validate_password(pwd: impl AsRef<str>, hash: impl AsRef<str>) -> Result<bool> {
+    let pwd = pwd.as_ref().to_string();
+    let hash = hash.as_ref().to_string();
 
     let task = tokio::task::spawn_blocking(move || -> Result<bool> {
         let parsed_hash = PasswordHash::new(&hash)?;

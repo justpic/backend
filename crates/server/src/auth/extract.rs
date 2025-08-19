@@ -5,8 +5,34 @@ use crate::error::{Error, Result};
 
 pub const SESSION_COOKIE_NAME: &str = "user_session";
 
-pub async fn get_maybe_session_from_request() -> Result<Option<DbSession>> {
-    todo!()
+pub async fn get_maybe_session_from_request(
+    req: &HttpRequest,
+    redis_pool: &justpic_database::redis::Pool,
+) -> Result<Option<DbSession>> {
+    let session = match req.cookie(SESSION_COOKIE_NAME) {
+        Some(cookie) => {
+            let session_key = cookie.value();
+            DbSession::get_from_cache(session_key, redis_pool).await?
+        }
+        None => None,
+    };
+
+    Ok(session)
+}
+
+pub async fn throw_err_if_client_has_active_session(
+    req: &HttpRequest,
+    redis_pool: &justpic_database::redis::Pool,
+) -> Result<()> {
+    let session_exist = get_maybe_session_from_request(req, redis_pool)
+        .await?
+        .is_some();
+
+    if session_exist {
+        return Err(Error::AlreadyExists);
+    }
+
+    Ok(())
 }
 
 /// Get User from request headers
@@ -18,16 +44,13 @@ pub async fn get_session_from_request(
     pool: &justpic_database::postgres::Pool,
     redis_pool: &justpic_database::redis::Pool,
 ) -> Result<DbSession> {
-    let cookie = req.cookie(SESSION_COOKIE_NAME).ok_or(Error::Unauthorized)?;
-    let session_key = cookie.value();
-
-    let db_session = DbSession::get_from_cache(session_key, redis_pool)
+    let db_session = get_maybe_session_from_request(req, redis_pool)
         .await?
         .ok_or(Error::Unauthorized)?; // temp error
 
     match role_needed {
         Role::Moderator | Role::Admin => {
-            let user_role = DbUser::get_by_id(db_session.user_id, pool)
+            let user_role = DbUser::get_by_id(&db_session.user_id, pool)
                 .await?
                 .ok_or(Error::Unauthorized)?
                 .role;

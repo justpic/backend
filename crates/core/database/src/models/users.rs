@@ -4,7 +4,7 @@ use time::OffsetDateTime;
 use tracing::log::debug;
 use uuid::Uuid;
 
-use super::roles::Role;
+use super::{roles::Role, sessions::DbSession};
 
 type Result<T> = DbResult<T>;
 
@@ -91,11 +91,7 @@ impl DbUser {
     }
 
     /// Get [`DbUser`] by ID
-    pub async fn get_by_id<T>(id: T, pool: &PgPool) -> Result<Option<DbUser>>
-    where
-        T: Into<Uuid>,
-    {
-        let id: Uuid = id.into();
+    pub async fn get_by_id(id: &Uuid, pool: &PgPool) -> Result<Option<DbUser>> {
         debug!("Fetching user by id [uid: {}]", id);
 
         let item = sqlx::query_as!(DbUser, "SELECT * FROM users WHERE id = $1", id)
@@ -133,6 +129,13 @@ impl DbUser {
             .await?;
 
         Ok(item)
+    }
+
+    /// Get [`DbUser`] by [`DbSession`]
+    pub async fn get_by_session(session: &DbSession, pool: &PgPool) -> Result<Option<DbUser>> {
+        let uid = &session.user_id;
+
+        DbUser::get_by_id(uid, pool).await
     }
 }
 

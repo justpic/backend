@@ -1143,6 +1143,7 @@ name = "justpic-models"
 version = "0.1.0"
 dependencies = [
  "derive_more",
+ "justpic-database",
  "serde",
  "serde_json",
  "time",
