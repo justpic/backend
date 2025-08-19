@@ -1,5 +1,5 @@
 use actix_web::{App, HttpServer, web};
-use justpic_database::{models::sessions::DbSession, postgres, redis};
+use justpic_database::postgres;
 use tracing::info;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
@@ -12,11 +12,11 @@ mod routes;
 #[derive(Debug, Clone)]
 pub struct AppState {
     pub pool: postgres::Pool,
-    pub redis_pool: redis::Pool,
+    pub redis_pool: justpic_cache::Pool,
 }
 
 impl AppState {
-    pub fn new(pool: postgres::Pool, redis_pool: redis::Pool) -> Self {
+    pub fn new(pool: postgres::Pool, redis_pool: justpic_cache::Pool) -> Self {
         info!("AppState initialized");
         AppState { pool, redis_pool }
     }
@@ -42,7 +42,7 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("An error occurred while running migrations");
 
-    let redis = redis::init_pool().await;
+    let redis = justpic_cache::init_pool().await;
 
     let state = AppState::new(pool, redis);
 

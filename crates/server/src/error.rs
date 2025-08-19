@@ -5,6 +5,8 @@ use derive_more::{Display, From};
 pub enum Error {
     DatabaseError(#[from] justpic_database::DatabaseError),
 
+    CacheError(#[from] justpic_cache::CacheError),
+
     HashError(#[from] argon2::password_hash::Error),
 
     MultithreadError(#[from] tokio::task::JoinError),

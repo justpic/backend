@@ -1,7 +1,6 @@
 use crate::{DbResult, models::users::DbUser};
 use argon2::password_hash::rand_core::{OsRng, RngCore};
 use base64::{Engine, prelude::BASE64_STANDARD};
-use deadpool_redis::redis::AsyncTypedCommands;
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, PgPool};
 use time::{Duration, OffsetDateTime};
@@ -10,7 +9,7 @@ use uuid::Uuid;
 type Result<T> = DbResult<T>;
 
 pub const SESSION_TTL_INT: u8 = 28;
-pub const CACHE_PREFIX: &str = "session:";
+pub const CACHE_PREFIX: &str = "session";
 
 /// ## Session database model
 #[derive(FromRow, Clone, Debug, Deserialize, Serialize)]
@@ -78,48 +77,12 @@ impl DbSession {
         Ok(())
     }
 
-    /// Save [`DbSession`] in cache and return cache key
-    pub async fn save_in_cache(&self, redis_pool: &deadpool_redis::Pool) -> Result<String> {
-        let json = serde_json::to_string(&self)?;
-        let mut conn = redis_pool.get().await?;
-
-        let key = [CACHE_PREFIX, &self.session_key].join(":");
-
-        conn.set_ex(&key, json, SESSION_TTL_INT as u64 * 24 * 3600)
-            .await?;
-
-        Ok(key)
-    }
-
-    /// Get [`DbSession`] from cache by session-key
-    pub async fn get_from_cache<T>(
-        key: T,
-        redis_pool: &deadpool_redis::Pool,
-    ) -> Result<Option<DbSession>>
-    where
-        T: Into<String>,
-    {
-        let mut conn = redis_pool.get().await?;
-
-        let key = [CACHE_PREFIX, &key.into()].join(":");
-
-        Ok(match conn.get(&key).await? {
-            Some(json) => Some(serde_json::from_str::<DbSession>(&json)?),
-            None => None,
-        })
-    }
-
     /// Get [`DbSession`] by key
-    pub async fn get_by_key<T>(key: T, pool: &PgPool) -> Result<Option<DbSession>>
-    where
-        T: Into<String>,
-    {
-        let key = key.into();
-
+    pub async fn get_by_key(key: impl AsRef<str>, pool: &PgPool) -> Result<Option<DbSession>> {
         let item = sqlx::query_as!(
             DbSession,
             "SELECT * FROM sessions WHERE session_key = $1",
-            key
+            key.as_ref()
         )
         .fetch_optional(pool)
         .await?;

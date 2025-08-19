@@ -6,8 +6,6 @@ version = "0.1.0"
 [dependencies]
 sqlx = {workspace = true, features = ["runtime-tokio", "postgres", "macros", "time", "uuid"]}
 
-deadpool-redis = {workspace = true}
-
 dotenvy = {workspace = true}
 
 time = { workspace = true, features = ["serde", "serde-human-readable"] }

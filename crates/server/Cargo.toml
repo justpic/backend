@@ -5,6 +5,8 @@ version = "0.1.0"
 
 [dependencies]
 justpic-database = {path = "../core/database"}
+justpic-cache = {path = "../core/cache"}
+
 justpic-models = {path = "../core/models"}
 
 actix-web = {workspace = true}
@@ -13,19 +15,14 @@ tokio = {workspace = true, features = ["sync", "rt-multi-thread", "macros"]}
 
 dotenvy = {workspace = true}
 
-# time = { workspace = true, features = ["serde", "serde-human-readable"] }
-
 tracing = {workspace = true}
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 
 argon2 = { workspace = true, features = ["std"] }
 
-# rand.workspace = true
-# uuid = {workspace = true, features = ["v4", "serde"]}
-
-# base64.workspace = true
-
 derive_more = {workspace = true, features = ["from", "display"]}
 
 utoipa = {workspace = true, features = ["actix_extras"]}
 utoipa-swagger-ui = {workspace = true, features = ["actix-web"]}
+
+futures = {workspace = true}

@@ -5,13 +5,29 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 use validator::Validate;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct UserSelfOut {
-    /// Unique user id
-    pub id: Uuid,
+    /// User data
+    #[serde(flatten)]
+    pub user: UserOut,
 
     /// Email
     pub email: String,
+}
+
+impl From<DbUser> for UserSelfOut {
+    fn from(value: DbUser) -> Self {
+        UserSelfOut {
+            email: value.email.clone(),
+            user: UserOut::from(value),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct UserOut {
+    /// Unique user id
+    pub id: Uuid,
 
     /// Display name
     pub display_name: String,
@@ -29,11 +45,10 @@ pub struct UserSelfOut {
     pub created: OffsetDateTime,
 }
 
-impl From<DbUser> for UserSelfOut {
+impl From<DbUser> for UserOut {
     fn from(value: DbUser) -> Self {
-        UserSelfOut {
+        UserOut {
             id: value.id,
-            email: value.email,
             display_name: value.display_name,
             username: value.username,
             avatar_url: value.avatar_url,

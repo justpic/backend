@@ -2,11 +2,11 @@ use actix_web::{
     cookie::Cookie, post, web::{self, Json}, HttpRequest, HttpResponse, Responder
 };
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use justpic_database::{models::{sessions::DbSession, users::DbUser}, postgres, redis};
+use justpic_database::{models::{sessions::{DbSession, self}, users::DbUser}, postgres};
 use justpic_models::{api::auth::LoginDto, Validate};
 
 use crate::{
-    auth::extract::{self, SESSION_COOKIE_NAME},
+    auth::{extract::{self, SESSION_COOKIE_NAME}, generate_session_cache_key},
     error::{Error, Result},
 };
 
@@ -21,7 +21,7 @@ use crate::{
 pub async fn login(
     req: HttpRequest,
     pool: web::Data<postgres::Pool>,
-    redis_pool: web::Data<redis::Pool>,
+    redis_pool: web::Data<justpic_cache::Pool>,
     payload: Json<LoginDto>,
 ) -> Result<impl Responder> {
     // Throw error if user try to login with active session
@@ -50,7 +50,12 @@ pub async fn login(
 
     // Saving created session
     session.insert(&pool).await?;
-    session.save_in_cache(&redis_pool).await?;
+    justpic_cache::save_in_cache(
+        generate_session_cache_key(&session.session_key), 
+        &session, 
+        sessions::SESSION_TTL_INT as u64 * 24 * 3600, 
+        &redis_pool
+    ).await?;
 
     // Creating session cookie
     let cookie = Cookie::build(SESSION_COOKIE_NAME, session.session_key)

@@ -23,6 +23,7 @@ uuid = "1.17.0"
 base64 = "0.22.1"
 derive_more = "2.0.1"
 validator = "0.19"
+futures = "0.3.31"
 
 boar-utils = {git = "https://github.com/justpic/boar-utils", branch = "master"}
 

@@ -1,4 +1,5 @@
 use crate::DbResult;
+use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, PgPool};
 use time::OffsetDateTime;
 use tracing::log::debug;
@@ -45,7 +46,7 @@ impl DbUser {
     where
         T: Into<String>,
     {
-        let username = process_username(username);
+        let username = process_username(username.into());
         debug!("Creating new user [username: {}]", username);
 
         DbUser {
@@ -102,11 +103,11 @@ impl DbUser {
     }
 
     /// Get [`DbUser`] by Username
-    pub async fn get_by_username<T>(username: T, pool: &PgPool) -> Result<Option<DbUser>>
-    where
-        T: Into<String>,
-    {
-        let username = process_username(username);
+    pub async fn get_by_username(
+        username: impl AsRef<str>,
+        pool: &PgPool,
+    ) -> Result<Option<DbUser>> {
+        let username = process_username(username.as_ref());
         debug!("Fetching user by username [username: {}]", username);
 
         let item = sqlx::query_as!(DbUser, "SELECT * FROM users WHERE username = $1", username)
@@ -117,11 +118,8 @@ impl DbUser {
     }
 
     /// Get [`DbUser`] by Email
-    pub async fn get_by_email<T>(email: T, pool: &PgPool) -> Result<Option<DbUser>>
-    where
-        T: Into<String>,
-    {
-        let email = email.into();
+    pub async fn get_by_email(email: impl AsRef<str>, pool: &PgPool) -> Result<Option<DbUser>> {
+        let email = email.as_ref();
         debug!("Fetching user by email [email: {}]", email);
 
         let item = sqlx::query_as!(DbUser, "SELECT * FROM users WHERE email = $1", email)
@@ -142,11 +140,8 @@ impl DbUser {
 /// Converts the username to the required format
 ///
 /// E.g. `John Doe 42` -> `john_doe_42`
-fn process_username<T>(raw: T) -> String
-where
-    T: Into<String>,
-{
-    let unprocessed: String = raw.into();
+fn process_username(raw: impl AsRef<str>) -> String {
+    let unprocessed = raw.as_ref();
 
     unprocessed
         .split_whitespace()

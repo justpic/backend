@@ -1,0 +1,18 @@
+[package]
+name = "justpic-cache"
+edition = "2024"
+version = "0.1.0"
+
+[dependencies]
+deadpool-redis = {workspace = true}
+
+dotenvy = {workspace = true}
+
+tracing = {workspace = true}
+
+derive_more = {workspace = true, features = ["from", "display"]}
+
+serde = {workspace = true, features = ["derive"]}
+serde_json = {workspace = true}
+
+futures = {workspace = true}

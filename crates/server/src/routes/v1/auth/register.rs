@@ -7,7 +7,7 @@ use argon2::password_hash::rand_core::OsRng;
 use argon2::{Argon2, Params, PasswordHasher};
 
 use justpic_database::models::users::DbUser;
-use justpic_database::{postgres, redis};
+use justpic_database::{postgres};
 
 use justpic_models::Validate;
 use justpic_models::api::users::RegisterDto;
@@ -30,7 +30,7 @@ use crate::error::{Error, Result};
 pub async fn register(
     req: HttpRequest,
     pool: web::Data<postgres::Pool>,
-    redis_pool: web::Data<redis::Pool>,
+    redis_pool: web::Data<justpic_cache::Pool>,
     payload: Json<RegisterDto>,
 ) -> Result<HttpResponse> {
     // Throw error if user try to register new account with active session

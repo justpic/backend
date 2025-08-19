@@ -3,16 +3,19 @@ use justpic_database::models::{roles::Role, sessions::DbSession, users::DbUser};
 
 use crate::error::{Error, Result};
 
+use super::generate_session_cache_key;
+
 pub const SESSION_COOKIE_NAME: &str = "user_session";
 
 pub async fn get_maybe_session_from_request(
     req: &HttpRequest,
-    redis_pool: &justpic_database::redis::Pool,
+    redis_pool: &justpic_cache::Pool,
 ) -> Result<Option<DbSession>> {
     let session = match req.cookie(SESSION_COOKIE_NAME) {
         Some(cookie) => {
-            let session_key = cookie.value();
-            DbSession::get_from_cache(session_key, redis_pool).await?
+            let session_key = generate_session_cache_key(cookie.value());
+
+            justpic_cache::get_from_cache(session_key, redis_pool).await?
         }
         None => None,
     };
@@ -22,7 +25,7 @@ pub async fn get_maybe_session_from_request(
 
 pub async fn throw_err_if_client_has_active_session(
     req: &HttpRequest,
-    redis_pool: &justpic_database::redis::Pool,
+    redis_pool: &justpic_cache::Pool,
 ) -> Result<()> {
     let session_exist = get_maybe_session_from_request(req, redis_pool)
         .await?
@@ -42,7 +45,7 @@ pub async fn get_session_from_request(
     req: &HttpRequest,
     role_needed: Role,
     pool: &justpic_database::postgres::Pool,
-    redis_pool: &justpic_database::redis::Pool,
+    redis_pool: &justpic_cache::Pool,
 ) -> Result<DbSession> {
     let db_session = get_maybe_session_from_request(req, redis_pool)
         .await?
@@ -65,4 +68,19 @@ pub async fn get_session_from_request(
         }
         Role::Regular => Ok(db_session),
     }
+}
+
+pub async fn get_maybe_authorized_user(
+    req: &HttpRequest,
+    pool: &justpic_database::postgres::Pool,
+    redis_pool: &justpic_cache::Pool,
+) -> Result<Option<DbUser>> {
+    let db_session = get_maybe_session_from_request(req, redis_pool).await?;
+
+    let user = match db_session {
+        Some(s) => DbUser::get_by_id(&s.id, pool).await?,
+        None => None,
+    };
+
+    Ok(user)
 }
