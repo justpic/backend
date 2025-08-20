@@ -24,5 +24,3 @@ derive_more = {workspace = true, features = ["from", "display"]}
 
 utoipa = {workspace = true, features = ["actix_extras"]}
 utoipa-swagger-ui = {workspace = true, features = ["actix-web"]}
-
-futures = {workspace = true}

@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse, Responder, get, web};
-use futures::FutureExt;
+
 use justpic_database::{models::users::DbUser, postgres};
 use justpic_models::api::users::UserOut;
 
@@ -16,18 +16,18 @@ pub async fn get_by_username(
     let name = username.into_inner().0;
     let key = format!("user:{name}");
 
-    let fetch = async move {
-        let user = DbUser::get_by_username(name, &pool)
-            .await?
-            .ok_or(Error::NotFound)?;
-
-        let out = UserOut::from(user);
-
-        Ok(out)
-    };
     let user =
-        justpic_cache::cache_wrapper::<UserOut, Error, _>(&redis_pool, key, move || fetch.boxed())
-            .await?;
+        justpic_cache::cache_wrapper::<UserOut, Error, _, _>(&redis_pool, key, move || async {
+            let pool = pool;
+            let user = DbUser::get_by_username(name, &pool)
+                .await?
+                .ok_or(Error::NotFound)?;
+
+            let out = UserOut::from(user);
+
+            Ok(out)
+        })
+        .await?;
 
     Ok(HttpResponse::Ok().json(user))
 }

@@ -1,4 +1,3 @@
-use futures::future::BoxFuture;
 use serde::{Serialize, de::DeserializeOwned};
 use tracing::{debug, warn};
 
@@ -10,10 +9,15 @@ const DEFAULT_CACHE_TTL: u64 = 5 * 60; // 5 min
 ///
 /// Allows you to wrap an asynchronous function and cache its result,
 /// or get an already cached result by key
-pub async fn cache_wrapper<T, E, F>(pool: &Pool, key: impl AsRef<str>, fetch: F) -> Result<T, E>
+pub async fn cache_wrapper<T, E, F, Fut>(
+    pool: &Pool,
+    key: impl AsRef<str>,
+    fetch: F,
+) -> Result<T, E>
 where
     T: Serialize + DeserializeOwned + Clone + Send + 'static,
-    F: FnOnce() -> BoxFuture<'static, Result<T, E>> + Send + 'static,
+    F: FnOnce() -> Fut + Send + 'static,
+    Fut: Future<Output = Result<T, E>> + Send + 'static,
 {
     let key = key.as_ref();
 

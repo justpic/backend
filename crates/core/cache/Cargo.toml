@@ -14,5 +14,3 @@ derive_more = {workspace = true, features = ["from", "display"]}
 
 serde = {workspace = true, features = ["derive"]}
 serde_json = {workspace = true}
-
-futures = {workspace = true}
