@@ -13,5 +13,5 @@ pub enum CacheError {
 
 type CacheResult<T> = Result<T, CacheError>;
 
-pub use cache::{cache_wrapper, get_from_cache, save_in_cache};
+pub use cache::{cache_wrapper, get_from_cache, remove_from_cache, save_in_cache};
 pub use redis::{Pool, init_pool};

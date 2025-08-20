@@ -11,6 +11,7 @@ use crate::routes;
 	paths(
 		routes::v1::auth::login::login,
 		routes::v1::auth::register::register,
+		routes::v1::auth::logout::logout,
 
 		routes::v1::users::get_me::get_me,
 		routes::v1::users::get_by_username::get_by_username,

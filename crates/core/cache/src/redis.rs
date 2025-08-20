@@ -42,3 +42,12 @@ pub async fn set(
     conn.set_ex(key, value, ttl).await?;
     Ok(())
 }
+
+pub async fn remove(key: impl AsRef<str>, pool: &Pool) -> CacheResult<()> {
+    let key = key.as_ref();
+
+    let mut conn = pool.get().await?;
+
+    conn.del(key).await?;
+    Ok(())
+}

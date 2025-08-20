@@ -87,3 +87,13 @@ where
     debug!("\"{key}\" was saved");
     Ok(())
 }
+
+/// Remove entity from cache by key
+pub async fn remove_from_cache(key: impl AsRef<str>, pool: &Pool) -> CacheResult<()> {
+    let key = key.as_ref();
+
+    redis::remove(key, pool).await?;
+
+    debug!("\"{key}\" was deleted");
+    Ok(())
+}

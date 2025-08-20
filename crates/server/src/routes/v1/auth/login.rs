@@ -6,7 +6,7 @@ use justpic_database::{models::{sessions::{DbSession, self}, users::DbUser}, pos
 use justpic_models::{api::auth::LoginDto, Validate};
 
 use crate::{
-    auth::{extract::{self, SESSION_COOKIE_NAME}, generate_session_cache_key},
+    auth::{extract::{self, SESSION_COOKIE_NAME}, generate_session_cache_key, generate_session_cookie},
     error::{Error, Result},
 };
 
@@ -58,12 +58,7 @@ pub async fn login(
     ).await?;
 
     // Creating session cookie
-    let cookie = Cookie::build(SESSION_COOKIE_NAME, session.session_key)
-        .path("/")
-        .http_only(true)
-        // .secure(true)
-        .expires(session.expires)
-        .finish();
+    let cookie = generate_session_cookie(&session);
 
     Ok(HttpResponse::Ok().cookie(cookie).finish())
 }
