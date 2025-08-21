@@ -6,6 +6,7 @@ version = "0.1.0"
 [dependencies]
 justpic-database = {path = "../core/database"}
 justpic-cache = {path = "../core/cache"}
+justpic-storage = {path = "../core/storage"}
 
 justpic-models = {path = "../core/models"}
 

@@ -1,0 +1,16 @@
+[package]
+name = "justpic-storage"
+edition = "2024"
+version = "0.1.0"
+
+[dependencies]
+aws-sdk-s3 = {version = "1.103.0", features = ["behavior-version-latest"]}
+aws-config = { version = "1.1.7", features = ["behavior-version-latest"] }
+
+tokio = {workspace = true, features = ["sync", "rt-multi-thread", "macros"]}
+
+dotenvy = {workspace = true}
+
+tracing = {workspace = true}
+
+derive_more = {workspace = true, features = ["from", "display"]}
