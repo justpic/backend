@@ -13,14 +13,14 @@ mod routes;
 pub struct AppState {
     pub pool: postgres::Pool,
     pub redis_pool: justpic_cache::Pool,
-    pub s3: justpic_storage::S3Client,
+    pub s3: justpic_storage::S3Storage,
 }
 
 impl AppState {
     pub fn new(
         pool: postgres::Pool,
         redis_pool: justpic_cache::Pool,
-        s3: justpic_storage::S3Client,
+        s3: justpic_storage::S3Storage,
     ) -> Self {
         info!("AppState initialized");
         AppState {
@@ -52,7 +52,7 @@ async fn main() -> std::io::Result<()> {
         .expect("An error occurred while running migrations");
 
     let redis = justpic_cache::init_pool().await;
-    let s3_client = justpic_storage::setup().await;
+    let s3_client = justpic_storage::setup_s3().await;
 
     let state = AppState::new(pool, redis, s3_client);
 
