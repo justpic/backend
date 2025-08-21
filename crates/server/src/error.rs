@@ -1,5 +1,7 @@
 use actix_web::http::StatusCode;
 use derive_more::{Display, From};
+use justpic_models::api::errors::ErrorOut;
+use tracing::warn;
 
 #[derive(Debug, Display, From)]
 pub enum Error {
@@ -43,6 +45,11 @@ impl actix_web::error::ResponseError for Error {
     }
 
     fn error_response(&self) -> actix_web::HttpResponse {
-        actix_web::HttpResponse::build(self.status_code()).body(self.to_string())
+        let code = self.status_code();
+        let body = ErrorOut::new(code.as_u16(), self.to_string());
+
+        warn!("API ERROR: {body:?}");
+
+        actix_web::HttpResponse::build(code).json(body)
     }
 }

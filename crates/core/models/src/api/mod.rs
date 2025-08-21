@@ -7,3 +7,6 @@ pub mod users;
 ///
 /// Contain DTOs for working with the `/auth/` endpoints.
 pub mod auth;
+
+/// ### Api model for error
+pub mod errors;
