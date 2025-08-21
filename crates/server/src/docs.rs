@@ -14,6 +14,7 @@ use crate::routes;
 		routes::v1::auth::logout::logout,
 
 		routes::v1::users::get_me::get_me,
+		routes::v1::users::get_me_sessions::get_me_sessions,
 		routes::v1::users::get_by_username::get_by_username,
 	)
 )]

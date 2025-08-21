@@ -90,6 +90,23 @@ impl DbSession {
         Ok(item)
     }
 
+    pub async fn get_by_owner_id(
+        owner_id: impl AsRef<Uuid>,
+        pool: &PgPool,
+    ) -> Result<Vec<DbSession>> {
+        let items = sqlx::query_as!(
+            DbSession,
+            "SELECT * FROM sessions
+            WHERE user_id = $1
+            ",
+            owner_id.as_ref()
+        )
+        .fetch_all(pool)
+        .await?;
+
+        Ok(items)
+    }
+
     /// Remove [`DbSession`] from db
     pub async fn remove(&self, pool: &PgPool) -> Result<()> {
         sqlx::query!("DELETE FROM sessions WHERE id = $1", self.id)
