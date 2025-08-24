@@ -1,5 +1,6 @@
 use actix_web::HttpRequest;
 use justpic_database::models::{roles::Role, sessions::DbSession, users::DbUser};
+use tracing::info;
 
 use crate::error::{Error, Result};
 

@@ -5,6 +5,8 @@ use tracing::warn;
 
 #[derive(Debug, Display, From)]
 pub enum Error {
+    Io(#[from] std::io::Error),
+
     DatabaseError(#[from] justpic_database::DatabaseError),
 
     CacheError(#[from] justpic_cache::CacheError),
@@ -13,11 +15,15 @@ pub enum Error {
 
     MultithreadError(#[from] tokio::task::JoinError),
 
-    JsonError,
+    StorageError(#[from] justpic_storage::StorageError),
+
+    MultipartError(#[from] actix_multipart::MultipartError),
 
     InternalError,
 
     NotFound,
+
+    BadRequest,
 
     AlreadyExists,
 
@@ -35,7 +41,9 @@ pub type Result<T> = std::result::Result<T, Error>;
 impl actix_web::error::ResponseError for Error {
     fn status_code(&self) -> actix_web::http::StatusCode {
         match self {
-            Error::ValidationError(..) | Error::InvalidCredentials => StatusCode::BAD_REQUEST,
+            Error::ValidationError(..) | Error::InvalidCredentials | Error::BadRequest => {
+                StatusCode::BAD_REQUEST
+            }
             Error::NotFound => StatusCode::NOT_FOUND,
             Error::AlreadyExists => StatusCode::CONFLICT,
             Error::Unauthorized => StatusCode::UNAUTHORIZED,

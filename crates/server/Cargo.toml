@@ -7,10 +7,12 @@ version = "0.1.0"
 justpic-database = {path = "../core/database"}
 justpic-cache = {path = "../core/cache"}
 justpic-storage = {path = "../core/storage"}
-
 justpic-models = {path = "../core/models"}
 
 actix-web = {workspace = true}
+actix-multipart = "0.7.2"
+
+futures-util = "0.3.31"
 
 tokio = {workspace = true, features = ["sync", "rt-multi-thread", "macros"]}
 

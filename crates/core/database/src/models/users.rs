@@ -1,5 +1,4 @@
 use crate::DbResult;
-use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, PgPool};
 use time::OffsetDateTime;
 use tracing::log::debug;

@@ -6,7 +6,8 @@ use crate::routes;
 #[openapi(
 	tags(
 		(name = "auth"),
-		(name = "users")
+		(name = "users"),
+		(name = "picks")
 	),
 	paths(
 		routes::v1::auth::login::login,
@@ -16,6 +17,8 @@ use crate::routes;
 		routes::v1::users::get_me::get_me,
 		routes::v1::users::get_me_sessions::get_me_sessions,
 		routes::v1::users::get_by_username::get_by_username,
+
+		routes::v1::picks::create::create,
 	)
 )]
 pub struct ApiDoc;

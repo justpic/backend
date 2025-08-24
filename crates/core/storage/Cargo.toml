@@ -16,3 +16,6 @@ dotenvy = {workspace = true}
 tracing = {workspace = true}
 
 derive_more = {workspace = true, features = ["from", "display"]}
+futures-util = "0.3.31"
+futures = "0.3.31"
+bytes = "1.10.1"

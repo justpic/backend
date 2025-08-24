@@ -13,6 +13,10 @@ pub enum StorageError {
 
 pub type StorageResult<T> = Result<T, StorageError>;
 
+pub type S3Stream = ByteStream;
+
+pub mod temp;
+
 #[derive(Debug, Clone)]
 pub struct S3Storage {
     client: Client,
@@ -48,7 +52,7 @@ pub async fn setup_s3() -> S3Storage {
 #[async_trait::async_trait]
 pub trait AppStorage {
     /// Upload file into S3
-    async fn upload(&self, key: &str, data: Vec<u8>) -> StorageResult<()>;
+    async fn upload(&self, key: &str, data: ByteStream) -> StorageResult<()>;
 
     /// Get file from S3
     async fn get(&self, key: &str) -> StorageResult<ByteStream>;
@@ -56,13 +60,13 @@ pub trait AppStorage {
 
 #[async_trait::async_trait]
 impl AppStorage for S3Storage {
-    async fn upload(&self, key: &str, data: Vec<u8>) -> StorageResult<()> {
+    async fn upload(&self, key: &str, data: ByteStream) -> StorageResult<()> {
         match self
             .client
             .put_object()
             .bucket(&self.bucket_name)
             .key(key)
-            .body(data.into())
+            .body(data)
             .send()
             .await
         {

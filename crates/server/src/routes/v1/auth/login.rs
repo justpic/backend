@@ -1,12 +1,12 @@
 use actix_web::{
-    cookie::Cookie, post, web::{self, Json}, HttpRequest, HttpResponse, Responder
+    post, web::{self, Json}, HttpRequest, HttpResponse, Responder
 };
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use justpic_database::{models::{sessions::{DbSession, self}, users::DbUser}, postgres};
 use justpic_models::{api::auth::LoginDto, Validate};
 
 use crate::{
-    auth::{extract::{self, SESSION_COOKIE_NAME}, generate_session_cache_key, generate_session_cookie},
+    auth::{extract, generate_session_cache_key, generate_session_cookie},
     error::{Error, Result},
 };
 
@@ -68,13 +68,9 @@ async fn validate_password(pwd: impl AsRef<str>, hash: impl AsRef<str>) -> Resul
     let pwd = pwd.as_ref().to_string();
     let hash = hash.as_ref().to_string();
 
-    let task = tokio::task::spawn_blocking(move || -> Result<bool> {
-        let parsed_hash = PasswordHash::new(&hash)?;
-        let pwd_bytes = pwd.as_bytes();
-        let res = Argon2::default().verify_password(pwd_bytes, &parsed_hash).is_ok();
+    let parsed_hash = PasswordHash::new(&hash)?;
+    let pwd_bytes = pwd.as_bytes();
+    let res = Argon2::default().verify_password(pwd_bytes, &parsed_hash).is_ok();
 
-        Ok(res)
-    });
-
-    task.await?
+    Ok(res)
 }
