@@ -12,8 +12,6 @@ justpic-models = {path = "../core/models"}
 actix-web = {workspace = true}
 actix-multipart = "0.7.2"
 
-futures-util = "0.3.31"
-
 tokio = {workspace = true, features = ["sync", "rt-multi-thread", "macros"]}
 
 dotenvy = {workspace = true}
@@ -27,3 +25,5 @@ derive_more = {workspace = true, features = ["from", "display"]}
 
 utoipa = {workspace = true, features = ["actix_extras"]}
 utoipa-swagger-ui = {workspace = true, features = ["actix-web"]}
+
+uuid = {workspace = true, features = ["v4", "serde"]}

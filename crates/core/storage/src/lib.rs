@@ -15,8 +15,6 @@ pub type StorageResult<T> = Result<T, StorageError>;
 
 pub type S3Stream = ByteStream;
 
-pub mod temp;
-
 #[derive(Debug, Clone)]
 pub struct S3Storage {
     client: Client,

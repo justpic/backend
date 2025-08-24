@@ -26,6 +26,7 @@ pub struct DbPick {
 impl DbPick {
     /// Create a new [`DbPick`]
     pub fn new<T>(
+        id: Uuid,
         title: Option<T>,
         description: Option<T>,
         source_url: Option<T>,
@@ -39,7 +40,7 @@ impl DbPick {
         T: Into<String>,
     {
         DbPick {
-            id: Uuid::new_v4(),
+            id,
             title: title.map(|v| v.into()),
             description: description.map(|v| v.into()),
             source_url: source_url.map(|v| v.into()),

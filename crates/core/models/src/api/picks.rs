@@ -1,17 +1,19 @@
 use serde::Deserialize;
+use utoipa::ToSchema;
 
-#[derive(Debug, Deserialize)]
+/// Upload 'pick' Dto
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct UploadDto {
+    #[schema(example = "Cute kitty!")]
     pub title: Option<String>,
+    #[schema(example = "Awwwwww!")]
     pub description: Option<String>,
+    #[schema(example = "pinterest.com")]
     pub source: Option<String>,
+    #[schema(example = false)]
     pub private: bool,
+    #[schema(example = false)]
     pub ai_generated: bool,
+    #[schema(example = true)]
     pub nsfw: bool,
-}
-
-impl UploadDto {
-    pub fn from_slice(bytes: &[u8]) -> Option<Self> {
-        serde_json::from_slice::<Self>(bytes).ok()
-    }
 }

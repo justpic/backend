@@ -2069,7 +2069,6 @@ dependencies = [
  "argon2",
  "derive_more 2.0.1",
  "dotenvy",
- "futures-util",
  "justpic-cache",
  "justpic-database",
  "justpic-models",
@@ -2079,6 +2078,7 @@ dependencies = [
  "tracing-subscriber",
  "utoipa",
  "utoipa-swagger-ui",
+ "uuid",
 ]
 
 [[package]]
