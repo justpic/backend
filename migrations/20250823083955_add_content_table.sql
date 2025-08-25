@@ -11,6 +11,8 @@ CREATE TABLE picks (
 
 	mimetype			VARCHAR(255) NOT NULL DEFAULT 'bin',
 
+	status				VARCHAR(64) NOT NULL DEFAULT 'pending',
+
 	private				BOOLEAN NOT NULL DEFAULT false,
 	ai_generated 	BOOLEAN NOT NULL DEFAULT false,
 	nsfw 					BOOLEAN NOT NULL DEFAULT false,

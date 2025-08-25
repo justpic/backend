@@ -1,6 +1,8 @@
+use derive_more::Display;
 use serde::Serialize;
 use sqlx::{PgPool, prelude::FromRow};
 use time::OffsetDateTime;
+use tracing::info;
 use uuid::Uuid;
 
 use crate::DbResult;
@@ -11,12 +13,19 @@ type Result<T> = DbResult<T>;
 #[derive(FromRow, Clone, Debug, Serialize)]
 pub struct DbPick {
     pub id: Uuid,
+
     pub title: Option<String>,
     pub description: Option<String>,
+
     pub source_url: Option<String>,
+
     pub created: OffsetDateTime,
     pub owner_id: Uuid,
+
     pub mimetype: String,
+
+    pub status: Status,
+
     pub private: bool,
     pub ai_generated: bool,
     pub nsfw: bool,
@@ -47,6 +56,7 @@ impl DbPick {
             created: OffsetDateTime::now_utc(),
             owner_id,
             mimetype: mimetype.into(),
+            status: Status::Pending,
             private,
             ai_generated,
             nsfw,
@@ -100,6 +110,28 @@ impl DbPick {
         Ok(items)
     }
 
+    pub async fn set_status(&self, status: Status, pool: &PgPool) -> Result<()> {
+        let status = status.to_string();
+        sqlx::query!(
+            "
+            UPDATE picks
+            SET status = $1
+            WHERE id = $2
+        ",
+            &status,
+            self.id,
+        )
+        .execute(pool)
+        .await?;
+
+        info!(
+            "The PICK with ID \"{}\" was set to status \"{}\"",
+            self.id, status
+        );
+
+        Ok(())
+    }
+
     pub async fn remove(&self, pool: &PgPool) -> Result<()> {
         Self::remove_by_id(&self.id, pool).await?;
         Ok(())
@@ -118,5 +150,29 @@ impl DbPick {
         .await?;
 
         Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Display)]
+pub enum Status {
+    #[display("pending")]
+    Pending,
+    #[display("processing")]
+    Processing,
+    #[display("ready")]
+    Ready,
+    #[display("failed")]
+    Failed,
+}
+
+impl From<String> for Status {
+    fn from(value: String) -> Self {
+        let raw = value.as_str();
+        match raw {
+            "processing" => Status::Processing,
+            "ready" => Status::Ready,
+            "failed" => Status::Failed,
+            _ => Status::Pending,
+        }
     }
 }
