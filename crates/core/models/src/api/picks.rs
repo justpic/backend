@@ -14,6 +14,6 @@ pub struct UploadDto {
     pub private: bool,
     #[schema(example = false)]
     pub ai_generated: bool,
-    #[schema(example = true)]
+    #[schema(example = false)]
     pub nsfw: bool,
 }

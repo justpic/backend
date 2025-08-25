@@ -2,6 +2,7 @@ use actix_multipart::form::tempfile::TempFile;
 use actix_multipart::form::{MultipartForm, json::Json as MpJson};
 use actix_web::{HttpRequest, HttpResponse, post, web};
 
+use tracing::error;
 use utoipa::ToSchema;
 use uuid::{Uuid};
 
@@ -48,27 +49,15 @@ pub async fn create(
     redis_pool: web::Data<justpic_cache::Pool>,
     s3: web::Data<justpic_storage::S3Storage>,
 ) -> Result<HttpResponse> {
-		// TODO: Add logging
 		let session =
 			extract::get_session_from_request(&req, Role::Regular, &pool, &redis_pool).await?;
 
 		let user_id = session.user_id;
 
 		let id = Uuid::new_v4();
-		let str_id = id.to_string();
 
 		let file = payload.file;
-		let key = format!("{}/{}/{}", &str_id[0..2], &str_id[2..4], &str_id);
-
-		// TODO: Optimize file uploading
-		let s3_stream = S3Stream::from_path(file.file.path())
-			.await
-			.map_err(|e| Error::StorageError(justpic_storage::StorageError::SdkError(format!("{e:?}"))))?;
-
-		s3.upload(&key, s3_stream).await?;
-
-		let mimetype = file.content_type
-			.map(|v| v.to_string())
+		let mimetype = file.content_type.clone().map(|v| v.to_string())
 			.ok_or(Error::BadRequest)?;
 
 		let meta = payload.meta.into_inner();
@@ -83,5 +72,31 @@ pub async fn create(
 
 		new_pick.insert(&pool).await?;
 
-    Ok(HttpResponse::Created().json(new_pick))
+		tokio::spawn(async move {
+			if let Err(e) = background_file_upload(&s3, file, id.to_string()).await {
+				error!("BACKGROUND FILE UPLOAD ERROR: {e:?}");
+				let _ = DbPick::remove_by_id(&id, &pool).await.map_err(|e| {
+					error!("FAILED TO DELETE CREATED PICK AFTER UPLOAD FAILED: {e:?}");
+				});
+			}
+		});
+
+    Ok(HttpResponse::Created().finish())
+}
+
+async fn background_file_upload(
+	s3: &justpic_storage::S3Storage,
+	file: TempFile,
+	id: String,
+) -> std::result::Result<(), justpic_storage::StorageError> {
+	let key = format!("{}/{}/{}", &id[0..2], &id[2..4], &id);
+
+	let s3_stream = S3Stream::from_path(file.file.path())
+			.await
+			.map_err(|e| format!("{e:?}"))?;
+
+	s3.upload(&key, s3_stream).await?;
+	drop(file);
+
+	Ok(())
 }

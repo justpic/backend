@@ -101,13 +101,18 @@ impl DbPick {
     }
 
     pub async fn remove(&self, pool: &PgPool) -> Result<()> {
+        Self::remove_by_id(&self.id, pool).await?;
+        Ok(())
+    }
+
+    pub async fn remove_by_id(id: &Uuid, pool: &PgPool) -> Result<()> {
         sqlx::query!(
             "
 					UPDATE picks
 					SET deleted = true
 					WHERE id = $1
 				",
-            self.id
+            id
         )
         .execute(pool)
         .await?;

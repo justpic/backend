@@ -1,12 +1,7 @@
-use derive_more::{Display, From};
-
 pub mod postgres;
 
 pub mod models;
 
 type DbResult<T> = Result<T, DatabaseError>;
 
-#[derive(Debug, From, Display)]
-pub enum DatabaseError {
-    SqlxError(#[from] sqlx::Error),
-}
+pub type DatabaseError = sqlx::Error;
