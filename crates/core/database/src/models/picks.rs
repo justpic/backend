@@ -1,8 +1,6 @@
-use derive_more::Display;
 use serde::Serialize;
 use sqlx::{PgPool, prelude::FromRow};
 use time::OffsetDateTime;
-use tracing::info;
 use uuid::Uuid;
 
 use crate::DbResult;
@@ -30,6 +28,27 @@ pub struct DbPick {
     pub ai_generated: bool,
     pub nsfw: bool,
     pub deleted: bool,
+}
+
+#[derive(FromRow, Clone, Debug)]
+pub struct PickWithUser {
+    pub id: Uuid,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub source_url: Option<String>,
+    pub created: OffsetDateTime,
+    pub owner_id: Uuid,
+    pub mimetype: String,
+    pub status: Status,
+    pub private: bool,
+    pub ai_generated: bool,
+    pub nsfw: bool,
+    pub deleted: bool,
+
+    pub user_id: Uuid,
+    pub user_display_name: String,
+    pub user_username: String,
+    pub user_avatar: Option<String>,
 }
 
 impl DbPick {
@@ -102,6 +121,32 @@ impl DbPick {
         Ok(item)
     }
 
+    pub async fn get_by_owner_id_with_user(
+        owner_id: &Uuid,
+        pool: &PgPool,
+    ) -> Result<Vec<PickWithUser>> {
+        let items = sqlx::query_as!(
+            PickWithUser,
+            "
+                SELECT 
+                    p.*,
+                    u.id as user_id,
+                    u.display_name as user_display_name,
+                    u.username as user_username,
+                    u.avatar_url as user_avatar
+                FROM picks p
+                JOIN users u ON p.owner_id = u.id
+                WHERE p.owner_id = $1
+            ",
+            owner_id
+        )
+        .fetch_all(pool)
+        .await?;
+
+        dbg!(items.len());
+        Ok(items)
+    }
+
     pub async fn get_by_owner_id(owner_id: &Uuid, pool: &PgPool) -> Result<Vec<DbPick>> {
         let items = sqlx::query_as!(DbPick, "SELECT * FROM picks WHERE owner_id = $1", owner_id)
             .fetch_all(pool)
@@ -148,15 +193,11 @@ impl DbPick {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Display)]
+#[derive(Debug, Clone, Serialize)]
 pub enum Status {
-    #[display("pending")]
     Pending,
-    #[display("processing")]
     Processing,
-    #[display("ready")]
     Ready,
-    #[display("failed")]
     Failed,
 }
 
@@ -168,6 +209,23 @@ impl From<String> for Status {
             "ready" => Status::Ready,
             "failed" => Status::Failed,
             _ => Status::Pending,
+        }
+    }
+}
+
+impl std::fmt::Display for Status {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl Status {
+    pub fn as_str<'a>(&self) -> &'a str {
+        match self {
+            Status::Pending => "pending",
+            Status::Processing => "processing",
+            Status::Ready => "ready",
+            Status::Failed => "failed",
         }
     }
 }

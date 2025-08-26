@@ -9,9 +9,9 @@ use crate::error::{Error, Result};
 #[get("/{id}/file")]
 pub async fn get_file(
     s3: web::Data<justpic_storage::S3Storage>,
-    id: web::Path<(String,)>,
+    id: web::Path<String>,
 ) -> Result<HttpResponse> {
-    let id: &str = id.0.as_ref();
+    let id: &str = id.as_ref();
     let storage_key = format!("{}/{}/{}", &id[..2], &id[2..4], &id);
 
     let file = s3.get(&storage_key).await?.ok_or(Error::NotFound)?;
