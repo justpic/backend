@@ -3,7 +3,7 @@ use justpic_database::{
     models::{roles::Role, users::DbUser},
     postgres,
 };
-use justpic_models::api::users::UserSelfOut;
+use justpic_models::api::users::UserSelfResponse;
 
 use crate::{
     auth::extract,
@@ -11,7 +11,15 @@ use crate::{
 };
 
 /// Get current user by session
-#[utoipa::path(get, path = "/v1/users/me", tag = "users")]
+#[utoipa::path(
+    get, 
+    path = "/v1/users/me", 
+    tag = "users",
+    responses(
+        (status = 200, body = UserSelfResponse),
+        (status = 400)
+    )
+)]
 #[get("/me")]
 pub async fn get_me(
     req: HttpRequest,
@@ -27,7 +35,7 @@ pub async fn get_me(
         .ok_or(Error::Unauthorized)?;
 
     // Cleaning up the database model for serving to the Api
-    let user_out = UserSelfOut::from(user);
+    let user_out = UserSelfResponse::from(user);
 
     Ok(HttpResponse::Ok().json(user_out))
 }

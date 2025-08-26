@@ -12,7 +12,7 @@ use justpic_database::models::picks::{DbPick, Status};
 use justpic_database::models::roles::Role;
 use justpic_database::postgres;
 
-use justpic_models::api::picks::UploadDto;
+use justpic_models::api::picks::UploadRequest;
 
 use justpic_storage::{AppStorage, S3Stream};
 
@@ -26,8 +26,8 @@ struct UploadForm {
 	#[multipart(limit = "45MB")]
 	file: TempFile,
 
-	#[schema(value_type = UploadDto)]
-	meta: MpJson<UploadDto>,
+	#[schema(value_type = UploadRequest)]
+	meta: MpJson<UploadRequest>,
 }
 
 /// Create new "pick" endpoint

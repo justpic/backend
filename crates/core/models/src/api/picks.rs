@@ -3,7 +3,7 @@ use utoipa::ToSchema;
 
 /// Upload 'pick' Dto
 #[derive(Debug, Deserialize, ToSchema)]
-pub struct UploadDto {
+pub struct UploadRequest {
     #[schema(example = "Cute kitty!")]
     pub title: Option<String>,
     #[schema(example = "Awwwwww!")]

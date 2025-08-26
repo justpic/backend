@@ -3,7 +3,7 @@ use actix_web::{
 };
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use justpic_database::{models::{sessions::{DbSession, self}, users::DbUser}, postgres};
-use justpic_models::{api::auth::LoginDto, Validate};
+use justpic_models::{api::auth::LoginRequest, Validate};
 
 use crate::{
     auth::{extract, generate_session_cache_key, generate_session_cookie},
@@ -14,7 +14,7 @@ use crate::{
 #[utoipa::path(
     post, 
     path = "/v1/auth/login", 
-    request_body = LoginDto,
+    request_body = LoginRequest,
     tag = "auth",
 )]
 #[post("/login")]
@@ -22,7 +22,7 @@ pub async fn login(
     req: HttpRequest,
     pool: web::Data<postgres::Pool>,
     redis_pool: web::Data<justpic_cache::Pool>,
-    payload: Json<LoginDto>,
+    payload: Json<LoginRequest>,
 ) -> Result<impl Responder> {
     // Throw error if user try to login with active session
     extract::throw_err_if_client_has_active_session(&req, &redis_pool).await?;

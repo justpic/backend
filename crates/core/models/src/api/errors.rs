@@ -1,13 +1,16 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ErrorOut {
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
+pub struct ErrorResponse {
+    #[schema(example = 500)]
     code: u16,
+    #[schema(example = "UNDEFINED_ERROR")]
     message: String,
 }
 
-impl ErrorOut {
-    pub fn new(code: u16, message: String) -> ErrorOut {
-        ErrorOut { code, message }
+impl ErrorResponse {
+    pub fn new(code: u16, message: String) -> ErrorResponse {
+        ErrorResponse { code, message }
     }
 }

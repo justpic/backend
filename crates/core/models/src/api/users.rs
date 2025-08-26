@@ -5,49 +5,54 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 use validator::Validate;
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct UserSelfOut {
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
+pub struct UserSelfResponse {
     /// User data
     #[serde(flatten)]
-    pub user: UserOut,
+    pub user: UserResponse,
 
     /// Email
+    #[schema(example = "user@example.com")]
     pub email: String,
 }
 
-impl From<DbUser> for UserSelfOut {
+impl From<DbUser> for UserSelfResponse {
     fn from(value: DbUser) -> Self {
-        UserSelfOut {
+        UserSelfResponse {
             email: value.email.clone(),
-            user: UserOut::from(value),
+            user: UserResponse::from(value),
         }
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct UserOut {
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
+pub struct UserResponse {
     /// Unique user id
     pub id: Uuid,
 
     /// Display name
+    #[schema(example = "John Doe")]
     pub display_name: String,
 
     /// Username
+    #[schema(example = "johndoe")]
     pub username: String,
 
     /// Avatar url
+    #[schema(example = "in process")]
     pub avatar_url: Option<String>,
 
     /// Banner url
+    #[schema(example = "in process")]
     pub banner_url: Option<String>,
 
     /// Created at
     pub created: OffsetDateTime,
 }
 
-impl From<DbUser> for UserOut {
+impl From<DbUser> for UserResponse {
     fn from(value: DbUser) -> Self {
-        UserOut {
+        UserResponse {
             id: value.id,
             display_name: value.display_name,
             username: value.username,
@@ -60,7 +65,7 @@ impl From<DbUser> for UserOut {
 
 /// User register DTO
 #[derive(Clone, Deserialize, Validate, ToSchema)]
-pub struct RegisterDto {
+pub struct RegisterRequest {
     #[schema(example = "user@example.com")]
     #[validate(email)]
     pub email: String,

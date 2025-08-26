@@ -18,4 +18,4 @@ uuid = {workspace = true, features = ["v4", "serde"]}
 derive_more = {workspace = true, features = ["from", "display"]}
 validator = {workspace = true, features = ["derive"]}
 
-utoipa = {workspace = true, features = ["actix_extras"]}
+utoipa = {workspace = true, features = ["actix_extras", "uuid", "time"]}

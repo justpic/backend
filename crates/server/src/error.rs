@@ -1,6 +1,6 @@
 use actix_web::http::StatusCode;
 use derive_more::{Display, From};
-use justpic_models::api::errors::ErrorOut;
+use justpic_models::api::errors::ErrorResponse;
 use tracing::warn;
 
 #[derive(Debug, Display, From)]
@@ -54,7 +54,7 @@ impl actix_web::error::ResponseError for Error {
 
     fn error_response(&self) -> actix_web::HttpResponse {
         let code = self.status_code();
-        let body = ErrorOut::new(code.as_u16(), self.to_string());
+        let body = ErrorResponse::new(code.as_u16(), self.to_string());
 
         warn!("API ERROR: {body:?}");
 

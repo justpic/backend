@@ -10,7 +10,7 @@ use justpic_database::models::users::DbUser;
 use justpic_database::{postgres};
 
 use justpic_models::Validate;
-use justpic_models::api::users::RegisterDto;
+use justpic_models::api::users::RegisterRequest;
 
 use crate::auth::extract;
 use crate::error::{Error, Result};
@@ -19,7 +19,7 @@ use crate::error::{Error, Result};
 #[utoipa::path(
 	post, 
 	path = "/v1/auth/register", 
-	request_body = RegisterDto, 
+	request_body = RegisterRequest, 
 	tag = "auth",
 	responses(
         (status = 201, description = "User created"),
@@ -31,7 +31,7 @@ pub async fn register(
     req: HttpRequest,
     pool: web::Data<postgres::Pool>,
     redis_pool: web::Data<justpic_cache::Pool>,
-    payload: Json<RegisterDto>,
+    payload: Json<RegisterRequest>,
 ) -> Result<HttpResponse> {
     // Throw error if user try to register new account with active session
     extract::throw_err_if_client_has_active_session(&req, &redis_pool).await?;
@@ -91,7 +91,7 @@ mod tests {
 
     #[test]
     fn test_request_body_dto_validator() {
-        let test_dto = RegisterDto {
+        let test_dto = RegisterRequest {
             email: "invalid email!!".to_string(),
             password: "abc".to_string(),
             username: ":)".to_string(),
