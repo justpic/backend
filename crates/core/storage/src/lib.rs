@@ -15,6 +15,11 @@ pub type StorageResult<T> = Result<T, StorageError>;
 
 pub type S3Stream = ByteStream;
 
+pub struct StorageFile {
+    pub body: S3Stream,
+    pub mimetype: Option<String>,
+}
+
 #[derive(Debug, Clone)]
 pub struct S3Storage {
     client: Client,
@@ -53,7 +58,7 @@ pub trait AppStorage {
     async fn upload(&self, key: &str, data: ByteStream, mimetype: &str) -> StorageResult<()>;
 
     /// Get file from S3
-    async fn get(&self, key: &str) -> StorageResult<ByteStream>;
+    async fn get(&self, key: &str) -> StorageResult<Option<StorageFile>>;
 }
 
 #[async_trait::async_trait]
@@ -80,7 +85,7 @@ impl AppStorage for S3Storage {
         }
     }
 
-    async fn get(&self, key: &str) -> StorageResult<ByteStream> {
+    async fn get(&self, key: &str) -> StorageResult<Option<StorageFile>> {
         match self
             .client
             .get_object()
@@ -89,10 +94,11 @@ impl AppStorage for S3Storage {
             .send()
             .await
         {
-            Ok(res) => Ok(res.body),
-            Err(SdkError::ServiceError(e)) if e.err().is_no_such_key() => {
-                Err(StorageError::NotFound)
-            }
+            Ok(res) => Ok(Some(StorageFile {
+                body: res.body,
+                mimetype: res.content_type,
+            })),
+            Err(SdkError::ServiceError(e)) if e.err().is_no_such_key() => Ok(None),
             Err(SdkError::ServiceError(e)) if e.err().is_invalid_object_state() => {
                 Err(StorageError::InvalidState)
             }

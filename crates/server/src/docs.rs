@@ -19,6 +19,7 @@ use crate::routes::v1;
 		v1::users::get_by_username::get_by_username,
 
 		v1::picks::create::create,
+		v1::picks::get_file::get_file,
 	)
 )]
 pub struct ApiDoc;
