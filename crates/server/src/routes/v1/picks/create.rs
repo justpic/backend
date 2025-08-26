@@ -23,7 +23,7 @@ use crate::error::{Error, Result};
 #[derive(Debug, MultipartForm, ToSchema)]
 struct UploadForm {
 	#[schema(value_type = String, format = Binary)]
-	#[multipart(limit = "35MB")]
+	#[multipart(limit = "45MB")]
 	file: TempFile,
 
 	#[schema(value_type = UploadDto)]
@@ -53,17 +53,17 @@ pub async fn create(
 ) -> Result<HttpResponse> {
 		let session =
 			extract::get_session_from_request(&req, Role::Regular, &pool, &redis_pool).await?;
-
 		let user_id = session.user_id;
 
-		let id = Uuid::new_v4();
-
 		let file = payload.file;
-		let mimetype = file.content_type.clone().map(|v| v.to_string())
+		let mimetype = file.content_type
+			.clone()
+			.map(|v| v.to_string())
 			.ok_or(Error::BadRequest)?;
 
 		let meta = payload.meta.into_inner();
 
+		let id = Uuid::new_v4();
 		let new_pick = Arc::new(DbPick::new(
 			id, meta.title, 
 			meta.description, 
@@ -76,31 +76,19 @@ pub async fn create(
 
 		let s3 = s3.into_inner();
 		let pool = pool.into_inner();
-
 		let pick = Arc::clone(&new_pick);
-		tokio::spawn(async move {
-			let _ = pick.set_status(Status::Processing, &pool).await.map_err(|e| {
-				error!("FAILED TO SET PICK STATUS: {e:?}");
-			});
 
-			if let Err(e) = background_file_upload(&s3, file, id.to_string()).await {
-				error!("BACKGROUND FILE UPLOAD ERROR: {e:?}");
-				let _ = pick.set_status(Status::Failed, &pool).await.map_err(|e| {
-					error!("FAILED TO DELETE CREATED PICK AFTER UPLOAD FAILED: {e:?}");
-				});
-			}
-			else {
-				let _ = pick.set_status(Status::Ready, &pool).await.map_err(|e| {
-					error!("FAILED TO SET PICK UPLOAD STATE: {e:?}");
-				});
-			}
+		tokio::spawn(async move {
+			process_file_upload(&s3, &pool, &pick, file).await.ok();
 		});
 
     Ok(HttpResponse::Created().json(new_pick))
 }
 
-async fn background_file_upload(
+/// Generate the file key and put it into S3
+async fn upload_file(
 	s3: &justpic_storage::S3Storage,
+	mimetype: &str,
 	file: TempFile,
 	id: String,
 ) -> std::result::Result<(), justpic_storage::StorageError> {
@@ -110,7 +98,46 @@ async fn background_file_upload(
 			.await
 			.map_err(|e| justpic_storage::StorageError::SdkError(format!("{e:?}")))?;
 
-	s3.upload(&key, s3_stream).await?;
+	s3.upload(&key, s3_stream, mimetype).await?;
 
+	Ok(())
+}
+
+/// Set 'pick' status and log error
+async fn set_status_with_log(
+	pick: &DbPick,
+	status: Status,
+	pool: &postgres::Pool,
+) -> Result<()> {
+	pick.set_status(status.clone(), pool).await.inspect_err(|e| {
+		error!(
+			"Failed to set status {:?} for pick {:?}: {e:?}",
+			status, pick.id
+		);
+	})?;
+
+	Ok(())
+}
+
+/// Process the file and change the 'pick' status
+async fn process_file_upload(
+	s3: &justpic_storage::S3Storage,
+	pool: &postgres::Pool,
+	pick: &DbPick,
+	file: TempFile,
+) -> Result<()> {
+	set_status_with_log(pick, Status::Processing, pool).await?;
+
+	match upload_file(s3, &pick.mimetype, file, pick.id.to_string()).await {
+			Ok(_) => {
+				set_status_with_log(pick, Status::Ready, pool).await?;
+			},
+			Err(e) => {
+				error!("Failed to upload file into s3: {e:?}");
+				set_status_with_log(pick, Status::Failed, pool).await?;
+
+				return Err(Error::InternalError);
+			}
+	}
 	Ok(())
 }

@@ -50,7 +50,7 @@ pub async fn setup_s3() -> S3Storage {
 #[async_trait::async_trait]
 pub trait AppStorage {
     /// Upload file into S3
-    async fn upload(&self, key: &str, data: ByteStream) -> StorageResult<()>;
+    async fn upload(&self, key: &str, data: ByteStream, mimetype: &str) -> StorageResult<()>;
 
     /// Get file from S3
     async fn get(&self, key: &str) -> StorageResult<ByteStream>;
@@ -58,13 +58,14 @@ pub trait AppStorage {
 
 #[async_trait::async_trait]
 impl AppStorage for S3Storage {
-    async fn upload(&self, key: &str, data: ByteStream) -> StorageResult<()> {
+    async fn upload(&self, key: &str, data: ByteStream, mimetype: &str) -> StorageResult<()> {
         match self
             .client
             .put_object()
             .bucket(&self.bucket_name)
             .key(key)
             .body(data)
+            .content_type(mimetype)
             .send()
             .await
         {

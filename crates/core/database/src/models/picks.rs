@@ -124,11 +124,6 @@ impl DbPick {
         .execute(pool)
         .await?;
 
-        info!(
-            "The PICK with ID \"{}\" was set to status \"{}\"",
-            self.id, status
-        );
-
         Ok(())
     }
 
