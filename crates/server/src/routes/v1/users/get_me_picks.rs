@@ -3,25 +3,25 @@ use justpic_database::{
     models::{picks::DbPick, roles::Role, users::DbUser},
     postgres,
 };
-use justpic_models::api::{picks::PickOut, users::UserSelfResponse};
+use justpic_models::api::{picks::PickOut};
 
 use crate::{
     auth::extract,
     error::{Error, Result},
 };
 
-/// Get current user by session
+/// Get current user picks
 #[utoipa::path(
     get, 
-    path = "/v1/picks/me", 
+    path = "/v1/users/me/picks", 
     tag = "picks",
     responses(
         (status = 200, body = Vec<PickOut>),
         (status = 400)
     )
 )]
-#[get("/me")]
-pub async fn get_me(
+#[get("/me/picks")]
+pub async fn get_me_picks(
     req: HttpRequest,
     pool: web::Data<postgres::Pool>,
     redis_pool: web::Data<justpic_cache::Pool>,

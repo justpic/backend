@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, prelude::FromRow};
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -121,6 +121,28 @@ impl DbPick {
         Ok(item)
     }
 
+    pub async fn get_by_id_with_user(id: &Uuid, pool: &PgPool) -> Result<Option<PickWithUser>> {
+        let item = sqlx::query_as!(
+            PickWithUser,
+            "
+                SELECT 
+                    p.*,
+                    u.id as user_id,
+                    u.display_name as user_display_name,
+                    u.username as user_username,
+                    u.avatar_url as user_avatar
+                FROM picks p
+                JOIN users u ON p.owner_id = u.id
+                WHERE p.id = $1
+            ",
+            id
+        )
+        .fetch_optional(pool)
+        .await?;
+
+        Ok(item)
+    }
+
     pub async fn get_by_owner_id_with_user(
         owner_id: &Uuid,
         pool: &PgPool,
@@ -143,7 +165,6 @@ impl DbPick {
         .fetch_all(pool)
         .await?;
 
-        dbg!(items.len());
         Ok(items)
     }
 
@@ -193,7 +214,7 @@ impl DbPick {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Status {
     Pending,
     Processing,

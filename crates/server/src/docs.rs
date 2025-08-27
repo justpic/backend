@@ -15,12 +15,13 @@ use crate::routes::v1;
 		v1::auth::logout::logout,
 
 		v1::users::get_me::get_me,
+		v1::users::get_me_picks::get_me_picks,
 		v1::users::get_me_sessions::get_me_sessions,
 		v1::users::get_by_username::get_by_username,
 
 		v1::picks::create::create,
+		v1::picks::get_by_id::get_by_id,
 		v1::picks::get_file::get_file,
-		v1::picks::get_me::get_me,
 	)
 )]
 pub struct ApiDoc;

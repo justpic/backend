@@ -21,7 +21,7 @@ pub struct UploadRequest {
     pub nsfw: bool,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Serialize, ToSchema, Clone, Deserialize)]
 pub struct PickOwner {
     pub id: Uuid,
     #[schema(example = "John Doe")]
@@ -31,7 +31,7 @@ pub struct PickOwner {
     pub avatar: Option<String>,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Deserialize, Serialize, ToSchema, Clone)]
 pub struct PickOut {
     pub id: Uuid,
     #[schema(example = "Cute cat!")]
@@ -55,6 +55,7 @@ pub struct PickOut {
     pub deleted: bool,
     #[schema(example = "/v1/picks/abc/file")]
     pub file_url: String,
+    #[schema(nullable = false)]
     pub owner: Option<PickOwner>,
 }
 
