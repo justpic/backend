@@ -30,10 +30,6 @@ pub struct UserResponse {
     /// Unique user id
     pub id: Uuid,
 
-    /// Display name
-    #[schema(example = "John Doe")]
-    pub display_name: String,
-
     /// Username
     #[schema(example = "johndoe")]
     pub username: String,
@@ -54,7 +50,6 @@ impl From<DbUser> for UserResponse {
     fn from(value: DbUser) -> Self {
         UserResponse {
             id: value.id,
-            display_name: value.display_name,
             username: value.username,
             avatar_url: value.avatar_url,
             banner_url: value.banner_url,
@@ -78,8 +73,4 @@ pub struct RegisterRequest {
     #[schema(example = "JohnDoe")]
     #[validate(length(min = 3, max = 128))]
     pub username: String,
-
-    #[schema(example = "John Doe")]
-    #[validate(length(min = 4, max = 128))]
-    pub display_name: String,
 }

@@ -20,9 +20,6 @@ pub struct DbUser {
     /// Password hash
     pub password: String,
 
-    /// Display name
-    pub display_name: String,
-
     /// Username
     pub username: String,
 
@@ -41,7 +38,7 @@ pub struct DbUser {
 
 impl DbUser {
     /// Create a new [`DbUser`]
-    pub fn new<T>(email: T, display_name: T, password_hash: T, username: T) -> DbUser
+    pub fn new<T>(email: T, password_hash: T, username: T) -> DbUser
     where
         T: Into<String>,
     {
@@ -52,7 +49,6 @@ impl DbUser {
             id: Uuid::new_v4(),
             email: email.into(),
             password: password_hash.into(),
-            display_name: display_name.into(),
             username,
             avatar_url: None,
             banner_url: None,
@@ -68,17 +64,16 @@ impl DbUser {
         sqlx::query!(
             "
             INSERT INTO users (
-                id, email, password, display_name, 
+                id, email, password, 
                 username, avatar_url, banner_url, created
             ) VALUES (
                 $1, $2, $3, $4,
-                $5, $6, $7, $8
+                $5, $6, $7
              )
         ",
             self.id,
             self.email,
             self.password,
-            self.display_name,
             self.username,
             self.avatar_url,
             self.banner_url,
@@ -175,7 +170,7 @@ mod tests {
         let d_name = "John Doe";
         let p_hash = "hunter42";
 
-        let user = DbUser::new(email, d_name, p_hash, username);
+        let user = DbUser::new(email, p_hash, username);
 
         assert_eq!(user.username, process_username(username));
 

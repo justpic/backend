@@ -49,7 +49,6 @@ pub struct CardWithUser {
     pub deleted: bool,
 
     pub user_id: Uuid,
-    pub user_display_name: String,
     pub user_username: String,
     pub user_avatar: Option<String>,
 }
@@ -132,7 +131,6 @@ impl Card {
                 SELECT 
                     c.*,
                     u.id as user_id,
-                    u.display_name as user_display_name,
                     u.username as user_username,
                     u.avatar_url as user_avatar
                 FROM cards c
@@ -157,7 +155,6 @@ impl Card {
                 SELECT 
                     c.*,
                     u.id as user_id,
-                    u.display_name as user_display_name,
                     u.username as user_username,
                     u.avatar_url as user_avatar
                 FROM cards c

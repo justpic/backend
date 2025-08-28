@@ -50,7 +50,6 @@ pub async fn register(
 
     let new_user = DbUser::new(
         payload.email,
-        payload.display_name,
         password_hash,
         payload.username,
     );
@@ -95,7 +94,6 @@ mod tests {
             email: "invalid email!!".to_string(),
             password: "abc".to_string(),
             username: ":)".to_string(),
-            display_name: "Invalid user".to_string(),
         };
 
         assert!(test_dto.validate().is_err());

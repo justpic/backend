@@ -24,8 +24,6 @@ pub struct CreateCardRequest {
 #[derive(Debug, Serialize, ToSchema, Clone, Deserialize)]
 pub struct CardOwner {
     pub id: Uuid,
-    #[schema(example = "John Doe")]
-    pub display_name: String,
     #[schema(example = "johndoe")]
     pub username: String,
     pub avatar: Option<String>,
@@ -83,7 +81,6 @@ impl From<CardWithUser> for CardResponse {
     fn from(value: CardWithUser) -> Self {
         let owner = CardOwner {
             id: value.user_id,
-            display_name: value.user_display_name,
             username: value.user_username,
             avatar: value.user_avatar,
         };

@@ -4,7 +4,6 @@ CREATE TABLE users (
 	email VARCHAR(255) UNIQUE NOT NULL,
 	password VARCHAR(1024) UNIQUE NOT NULL,
 
-	display_name VARCHAR(255) NOT NULL,
 	username VARCHAR(255) UNIQUE NOT NULL,
 
 	avatar_url VARCHAR(1024),
