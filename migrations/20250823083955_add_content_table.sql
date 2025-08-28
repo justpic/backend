@@ -13,6 +13,8 @@ CREATE TABLE picks (
 
 	status				VARCHAR(64) NOT NULL DEFAULT 'pending',
 
+	file_url			VARCHAR(1024),
+
 	private				BOOLEAN NOT NULL DEFAULT false,
 	ai_generated 	BOOLEAN NOT NULL DEFAULT false,
 	nsfw 					BOOLEAN NOT NULL DEFAULT false,

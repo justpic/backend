@@ -5,8 +5,8 @@ use tokio_util::io::ReaderStream;
 use crate::error::{Error, Result};
 
 /// Get file from s3
-#[utoipa::path(get, path = "/v1/picks/{id}/file", tag = "picks")]
-#[get("/{id}/file")]
+#[utoipa::path(get, path = "/v1/files/{id}", tag = "files")]
+#[get("/{id}")]
 pub async fn get_file(
     s3: web::Data<justpic_storage::S3Storage>,
     id: web::Path<String>,

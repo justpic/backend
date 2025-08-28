@@ -5,7 +5,7 @@ use justpic_database::{
     models::picks::DbPick,
     postgres,
 };
-use justpic_models::api::picks::PickOut;
+use justpic_models::api::picks::PickResponse;
 use uuid::Uuid;
 
 use crate::{
@@ -18,7 +18,7 @@ use crate::{
     path = "/v1/picks/{id}", 
     tag = "picks",
     responses(
-        (status = 200, body = PickOut),
+        (status = 200, body = PickResponse),
         (status = 400)
     )
 )]
@@ -31,14 +31,14 @@ pub async fn get_by_id(
 ) -> Result<impl Responder> {
 	let id = Uuid::from_str(&id).map_err(|_| Error::BadRequest)?;
 
-    let out = justpic_cache::cache_wrapper::<PickOut, Error, _, _>(
+    let out = justpic_cache::cache_wrapper::<PickResponse, Error, _, _>(
         &redis_pool, 
         format!("pick:{id}"),
         async move || {
             let pick = DbPick::get_by_id_with_user(&id, &pool).await?
                 .ok_or(Error::NotFound)?;
 
-            let out = PickOut::from(pick);
+            let out = PickResponse::from(pick);
             Ok(out)
         }
     ).await?;

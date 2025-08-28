@@ -91,16 +91,21 @@ async fn upload_file(
 	mimetype: &str,
 	file: TempFile,
 	id: String,
-) -> std::result::Result<(), justpic_storage::StorageError> {
-	let key = format!("{}/{}/{}", &id[0..2], &id[2..4], &id);
+) -> std::result::Result<String, justpic_storage::StorageError> {
+	let content_type = file.content_type;
+	let ext = content_type
+		.map(|v| v.subtype().to_string())
+		.unwrap_or(String::from("bin"));
 
-	let s3_stream = S3Stream::from_path(file.file.path())
+	let key = format!("{}/{}/{}.{}", &id[0..2], &id[2..4], &id, ext);
+
+	let stream = S3Stream::from_path(file.file.path())
 			.await
 			.map_err(|e| justpic_storage::StorageError::SdkError(format!("{e:?}")))?;
 
-	s3.upload(&key, s3_stream, mimetype).await?;
+	s3.upload(&key, stream, mimetype).await?;
 
-	Ok(())
+	Ok(format!("{}.{}", id, ext))
 }
 
 /// Set 'pick' status and log error
@@ -129,7 +134,8 @@ async fn process_file_upload(
 	set_status_with_log(pick, Status::Processing, pool).await?;
 
 	match upload_file(s3, &pick.mimetype, file, pick.id.to_string()).await {
-			Ok(_) => {
+			Ok(key) => {
+				pick.set_file_url(key, pool).await?;
 				set_status_with_log(pick, Status::Ready, pool).await?;
 			},
 			Err(e) => {

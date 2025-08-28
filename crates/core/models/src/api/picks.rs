@@ -32,7 +32,7 @@ pub struct PickOwner {
 }
 
 #[derive(Debug, Deserialize, Serialize, ToSchema, Clone)]
-pub struct PickOut {
+pub struct PickResponse {
     pub id: Uuid,
     #[schema(example = "Cute cat!")]
     pub title: Option<String>,
@@ -54,14 +54,14 @@ pub struct PickOut {
     #[schema(example = false)]
     pub deleted: bool,
     #[schema(example = "/v1/picks/abc/file")]
-    pub file_url: String,
+    pub file_url: Option<String>,
     #[schema(nullable = false)]
     pub owner: Option<PickOwner>,
 }
 
-impl From<DbPick> for PickOut {
+impl From<DbPick> for PickResponse {
     fn from(value: DbPick) -> Self {
-        PickOut {
+        PickResponse {
             id: value.id,
             title: value.title,
             description: value.description,
@@ -73,13 +73,13 @@ impl From<DbPick> for PickOut {
             ai_generated: value.ai_generated,
             nsfw: value.nsfw,
             deleted: value.deleted,
-            file_url: format!("/v1/picks/{}/file", value.id),
+            file_url: value.file_url,
             owner: None,
         }
     }
 }
 
-impl From<PickWithUser> for PickOut {
+impl From<PickWithUser> for PickResponse {
     fn from(value: PickWithUser) -> Self {
         let owner = PickOwner {
             id: value.user_id,
@@ -88,7 +88,7 @@ impl From<PickWithUser> for PickOut {
             avatar: value.user_avatar,
         };
 
-        PickOut {
+        PickResponse {
             id: value.id,
             title: value.title,
             description: value.description,
@@ -100,7 +100,7 @@ impl From<PickWithUser> for PickOut {
             ai_generated: value.ai_generated,
             nsfw: value.nsfw,
             deleted: value.deleted,
-            file_url: format!("/v1/picks/{}/file", value.id),
+            file_url: value.file_url,
             owner: Some(owner),
         }
     }

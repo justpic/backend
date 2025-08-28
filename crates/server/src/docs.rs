@@ -7,7 +7,8 @@ use crate::routes::v1;
 	tags(
 		(name = "auth"),
 		(name = "users"),
-		(name = "picks")
+		(name = "picks"),
+		(name = "files")
 	),
 	paths(
 		v1::auth::login::login,
@@ -21,7 +22,8 @@ use crate::routes::v1;
 
 		v1::picks::create::create,
 		v1::picks::get_by_id::get_by_id,
-		v1::picks::get_file::get_file,
+
+		v1::files::get_file::get_file,
 	)
 )]
 pub struct ApiDoc;

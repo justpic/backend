@@ -3,7 +3,7 @@ use justpic_database::{
     models::{picks::DbPick, roles::Role, users::DbUser},
     postgres,
 };
-use justpic_models::api::{picks::PickOut};
+use justpic_models::api::{picks::PickResponse};
 
 use crate::{
     auth::extract,
@@ -16,7 +16,7 @@ use crate::{
     path = "/v1/users/me/picks", 
     tag = "picks",
     responses(
-        (status = 200, body = Vec<PickOut>),
+        (status = 200, body = Vec<PickResponse>),
         (status = 400)
     )
 )]
@@ -38,8 +38,8 @@ pub async fn get_me_picks(
 
     // Cleaning up the database model for serving to the Api
     let out = picks.into_iter().map(|v| {
-			PickOut::from(v)
-		}).collect::<Vec<PickOut>>();
+			PickResponse::from(v)
+		}).collect::<Vec<PickResponse>>();
 
     Ok(HttpResponse::Ok().json(out))
 }

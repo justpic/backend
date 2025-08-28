@@ -24,6 +24,8 @@ pub struct DbPick {
 
     pub status: Status,
 
+    pub file_url: Option<String>,
+
     pub private: bool,
     pub ai_generated: bool,
     pub nsfw: bool,
@@ -40,6 +42,7 @@ pub struct PickWithUser {
     pub owner_id: Uuid,
     pub mimetype: String,
     pub status: Status,
+    pub file_url: Option<String>,
     pub private: bool,
     pub ai_generated: bool,
     pub nsfw: bool,
@@ -76,6 +79,7 @@ impl DbPick {
             owner_id,
             mimetype: mimetype.into(),
             status: Status::Pending,
+            file_url: None,
             private,
             ai_generated,
             nsfw,
@@ -193,6 +197,20 @@ impl DbPick {
         Ok(())
     }
 
+    pub async fn set_file_url(&self, url: impl AsRef<str>, pool: &PgPool) -> Result<()> {
+        let url = url.as_ref();
+        sqlx::query!(
+            "UPDATE picks
+            SET file_url = $1
+            WHERE id = $2",
+            url,
+            self.id
+        )
+        .execute(pool)
+        .await?;
+        Ok(())
+    }
+
     pub async fn remove(&self, pool: &PgPool) -> Result<()> {
         Self::remove_by_id(&self.id, pool).await?;
         Ok(())
@@ -215,6 +233,7 @@ impl DbPick {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Status {
     Pending,
     Processing,
