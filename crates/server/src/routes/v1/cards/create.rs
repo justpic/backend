@@ -8,39 +8,39 @@ use tracing::error;
 use utoipa::ToSchema;
 use uuid::{Uuid};
 
-use justpic_database::models::picks::{DbPick, Status};
+use justpic_database::models::cards::{Card, Status};
 use justpic_database::models::roles::Role;
 use justpic_database::postgres;
 
-use justpic_models::api::picks::UploadRequest;
+use justpic_models::api::cards::CreateCardRequest;
 
 use justpic_storage::{AppStorage, S3Stream};
 
 use crate::auth::extract;
 use crate::error::{Error, Result};
 
-/// Upload 'pick' multipart form
+/// Upload card multipart form
 #[derive(Debug, MultipartForm, ToSchema)]
 struct UploadForm {
 	#[schema(value_type = String, format = Binary)]
 	#[multipart(limit = "45MB")]
 	file: TempFile,
 
-	#[schema(value_type = UploadRequest)]
-	meta: MpJson<UploadRequest>,
+	#[schema(value_type = CreateCardRequest)]
+	meta: MpJson<CreateCardRequest>,
 }
 
-/// Create new "pick" endpoint
+/// Create new card endpoint
 #[utoipa::path(
 	post, 
-	path = "/v1/picks/", 
+	path = "/v1/cards/", 
 	request_body (
 		content = UploadForm,
 		content_type = "multipart/form-data"
 	),
-	tag = "picks",
+	tag = "cards",
 	responses(
-        (status = 201, description = "Pick created"),
+        (status = 201, description = "Card created"),
     )
 )]
 #[post("/")]
@@ -64,7 +64,7 @@ pub async fn create(
 		let meta = payload.meta.into_inner();
 
 		let id = Uuid::new_v4();
-		let new_pick = Arc::new(DbPick::new(
+		let new_card = Arc::new(Card::new(
 			id, meta.title, 
 			meta.description, 
 			meta.source, user_id, 
@@ -72,17 +72,17 @@ pub async fn create(
 			meta.ai_generated, meta.nsfw
 		));
 
-		new_pick.insert(&pool).await?;
+		new_card.insert(&pool).await?;
 
 		let s3 = s3.into_inner();
 		let pool = pool.into_inner();
-		let pick = Arc::clone(&new_pick);
+		let card = Arc::clone(&new_card);
 
 		tokio::spawn(async move {
-			process_file_upload(&s3, &pool, &pick, file).await.ok();
+			process_file_upload(&s3, &pool, &card, file).await.ok();
 		});
 
-    Ok(HttpResponse::Created().json(new_pick))
+    Ok(HttpResponse::Created().json(new_card))
 }
 
 /// Generate the file key and put it into S3
@@ -108,39 +108,39 @@ async fn upload_file(
 	Ok(format!("{}.{}", id, ext))
 }
 
-/// Set 'pick' status and log error
+/// Set card status and log error
 async fn set_status_with_log(
-	pick: &DbPick,
+	card: &Card,
 	status: Status,
 	pool: &postgres::Pool,
 ) -> Result<()> {
-	pick.set_status(status.clone(), pool).await.inspect_err(|e| {
+	card.set_status(status.clone(), pool).await.inspect_err(|e| {
 		error!(
-			"Failed to set status {:?} for pick {:?}: {e:?}",
-			status, pick.id
+			"Failed to set status {:?} for card {:?}: {e:?}",
+			status, card.id
 		);
 	})?;
 
 	Ok(())
 }
 
-/// Process the file and change the 'pick' status
+/// Process the file and change the card status
 async fn process_file_upload(
 	s3: &justpic_storage::S3Storage,
 	pool: &postgres::Pool,
-	pick: &DbPick,
+	card: &Card,
 	file: TempFile,
 ) -> Result<()> {
-	set_status_with_log(pick, Status::Processing, pool).await?;
+	set_status_with_log(card, Status::Processing, pool).await?;
 
-	match upload_file(s3, &pick.mimetype, file, pick.id.to_string()).await {
+	match upload_file(s3, &card.mimetype, file, card.id.to_string()).await {
 			Ok(key) => {
-				pick.set_file_url(key, pool).await?;
-				set_status_with_log(pick, Status::Ready, pool).await?;
+				card.set_file_url(key, pool).await?;
+				set_status_with_log(card, Status::Ready, pool).await?;
 			},
 			Err(e) => {
 				error!("Failed to upload file into s3: {e:?}");
-				set_status_with_log(pick, Status::Failed, pool).await?;
+				set_status_with_log(card, Status::Failed, pool).await?;
 
 				return Err(Error::InternalError);
 			}

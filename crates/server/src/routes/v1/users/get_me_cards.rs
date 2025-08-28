@@ -1,27 +1,27 @@
 use actix_web::{HttpRequest, HttpResponse, Responder, get, web};
 use justpic_database::{
-    models::{picks::DbPick, roles::Role, users::DbUser},
+    models::{cards::Card, roles::Role, users::DbUser},
     postgres,
 };
-use justpic_models::api::{picks::PickResponse};
+use justpic_models::api::{cards::CardResponse};
 
 use crate::{
     auth::extract,
     error::{Error, Result},
 };
 
-/// Get current user picks
+/// Get current user cards
 #[utoipa::path(
     get, 
-    path = "/v1/users/me/picks", 
-    tag = "picks",
+    path = "/v1/users/me/cards", 
+    tag = "cards",
     responses(
-        (status = 200, body = Vec<PickResponse>),
+        (status = 200, body = Vec<CardResponse>),
         (status = 400)
     )
 )]
-#[get("/me/picks")]
-pub async fn get_me_picks(
+#[get("/me/cards")]
+pub async fn get_me_cards(
     req: HttpRequest,
     pool: web::Data<postgres::Pool>,
     redis_pool: web::Data<justpic_cache::Pool>,
@@ -34,12 +34,12 @@ pub async fn get_me_picks(
         .await?
         .ok_or(Error::Unauthorized)?;
 
-	let picks = DbPick::get_by_owner_id_with_user(&user.id, &pool).await?;
+	let cards = Card::get_by_owner_id_with_user(&user.id, &pool).await?;
 
     // Cleaning up the database model for serving to the Api
-    let out = picks.into_iter().map(|v| {
-			PickResponse::from(v)
-		}).collect::<Vec<PickResponse>>();
+    let out = cards.into_iter().map(|v| {
+			CardResponse::from(v)
+		}).collect::<Vec<CardResponse>>();
 
     Ok(HttpResponse::Ok().json(out))
 }

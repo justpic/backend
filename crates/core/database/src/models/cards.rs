@@ -7,9 +7,9 @@ use crate::DbResult;
 
 type Result<T> = DbResult<T>;
 
-/// ### "Pick" database model
+/// ### "Card" database model
 #[derive(FromRow, Clone, Debug, Serialize)]
-pub struct DbPick {
+pub struct Card {
     pub id: Uuid,
 
     pub title: Option<String>,
@@ -33,7 +33,7 @@ pub struct DbPick {
 }
 
 #[derive(FromRow, Clone, Debug)]
-pub struct PickWithUser {
+pub struct CardWithUser {
     pub id: Uuid,
     pub title: Option<String>,
     pub description: Option<String>,
@@ -54,8 +54,8 @@ pub struct PickWithUser {
     pub user_avatar: Option<String>,
 }
 
-impl DbPick {
-    /// Create a new [`DbPick`]
+impl Card {
+    /// Create a new [`Card`]
     pub fn new<T>(
         id: Uuid,
         title: Option<T>,
@@ -66,11 +66,11 @@ impl DbPick {
         private: bool,
         ai_generated: bool,
         nsfw: bool,
-    ) -> DbPick
+    ) -> Card
     where
         T: Into<String>,
     {
-        DbPick {
+        Card {
             id,
             title: title.map(|v| v.into()),
             description: description.map(|v| v.into()),
@@ -87,11 +87,11 @@ impl DbPick {
         }
     }
 
-    /// Insert [`DbPick`] into database
+    /// Insert [`Card`] into database
     pub async fn insert(&self, pool: &PgPool) -> Result<()> {
         sqlx::query!(
             "
-					INSERT INTO picks (
+					INSERT INTO cards (
 						id, title, description, source_url, created,
 						owner_id, mimetype, private, ai_generated, nsfw, deleted
 				) VALUES (
@@ -117,27 +117,27 @@ impl DbPick {
         Ok(())
     }
 
-    pub async fn get_by_id(id: &Uuid, pool: &PgPool) -> Result<Option<DbPick>> {
-        let item = sqlx::query_as!(DbPick, "SELECT * FROM picks WHERE id = $1", id)
+    pub async fn get_by_id(id: &Uuid, pool: &PgPool) -> Result<Option<Card>> {
+        let item = sqlx::query_as!(Card, "SELECT * FROM cards WHERE id = $1", id)
             .fetch_optional(pool)
             .await?;
 
         Ok(item)
     }
 
-    pub async fn get_by_id_with_user(id: &Uuid, pool: &PgPool) -> Result<Option<PickWithUser>> {
+    pub async fn get_by_id_with_user(id: &Uuid, pool: &PgPool) -> Result<Option<CardWithUser>> {
         let item = sqlx::query_as!(
-            PickWithUser,
+            CardWithUser,
             "
                 SELECT 
-                    p.*,
+                    c.*,
                     u.id as user_id,
                     u.display_name as user_display_name,
                     u.username as user_username,
                     u.avatar_url as user_avatar
-                FROM picks p
-                JOIN users u ON p.owner_id = u.id
-                WHERE p.id = $1
+                FROM cards c
+                JOIN users u ON c.owner_id = u.id
+                WHERE c.id = $1
             ",
             id
         )
@@ -150,19 +150,19 @@ impl DbPick {
     pub async fn get_by_owner_id_with_user(
         owner_id: &Uuid,
         pool: &PgPool,
-    ) -> Result<Vec<PickWithUser>> {
+    ) -> Result<Vec<CardWithUser>> {
         let items = sqlx::query_as!(
-            PickWithUser,
+            CardWithUser,
             "
                 SELECT 
-                    p.*,
+                    c.*,
                     u.id as user_id,
                     u.display_name as user_display_name,
                     u.username as user_username,
                     u.avatar_url as user_avatar
-                FROM picks p
-                JOIN users u ON p.owner_id = u.id
-                WHERE p.owner_id = $1
+                FROM cards c
+                JOIN users u ON c.owner_id = u.id
+                WHERE c.owner_id = $1
             ",
             owner_id
         )
@@ -172,8 +172,8 @@ impl DbPick {
         Ok(items)
     }
 
-    pub async fn get_by_owner_id(owner_id: &Uuid, pool: &PgPool) -> Result<Vec<DbPick>> {
-        let items = sqlx::query_as!(DbPick, "SELECT * FROM picks WHERE owner_id = $1", owner_id)
+    pub async fn get_by_owner_id(owner_id: &Uuid, pool: &PgPool) -> Result<Vec<Card>> {
+        let items = sqlx::query_as!(Card, "SELECT * FROM cards WHERE owner_id = $1", owner_id)
             .fetch_all(pool)
             .await?;
 
@@ -184,7 +184,7 @@ impl DbPick {
         let status = status.to_string();
         sqlx::query!(
             "
-            UPDATE picks
+            UPDATE cards
             SET status = $1
             WHERE id = $2
         ",
@@ -200,7 +200,7 @@ impl DbPick {
     pub async fn set_file_url(&self, url: impl AsRef<str>, pool: &PgPool) -> Result<()> {
         let url = url.as_ref();
         sqlx::query!(
-            "UPDATE picks
+            "UPDATE cards
             SET file_url = $1
             WHERE id = $2",
             url,
@@ -219,7 +219,7 @@ impl DbPick {
     pub async fn remove_by_id(id: &Uuid, pool: &PgPool) -> Result<()> {
         sqlx::query!(
             "
-					UPDATE picks
+					UPDATE cards
 					SET deleted = true
 					WHERE id = $1
 				",

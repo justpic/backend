@@ -1,4 +1,4 @@
-CREATE TABLE picks (
+CREATE TABLE cards (
 	id 						UUID 		PRIMARY KEY,
 
 	title					VARCHAR(255),
@@ -21,5 +21,5 @@ CREATE TABLE picks (
 	deleted 			BOOLEAN NOT NULL DEFAULT false
 );
 
-CREATE INDEX ids_picks_owner_id ON picks(owner_id);
-CREATE INDEX idx_picks_private ON picks(private);
+CREATE INDEX ids_cards_owner_id ON cards(owner_id);
+CREATE INDEX idx_cards_private ON cards(private);

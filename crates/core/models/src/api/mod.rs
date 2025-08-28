@@ -11,4 +11,4 @@ pub mod auth;
 /// ### Api model for error
 pub mod errors;
 
-pub mod picks;
+pub mod cards;

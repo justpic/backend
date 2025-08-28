@@ -2,23 +2,23 @@ use std::str::FromStr;
 
 use actix_web::{HttpRequest, HttpResponse, Responder, get, web};
 use justpic_database::{
-    models::picks::DbPick,
+    models::cards::Card,
     postgres,
 };
-use justpic_models::api::picks::PickResponse;
+use justpic_models::api::cards::CardResponse;
 use uuid::Uuid;
 
 use crate::{
     auth::extract, error::{Error, Result}
 };
 
-/// Get pick by id
+/// Get card by id
 #[utoipa::path(
     get, 
-    path = "/v1/picks/{id}", 
-    tag = "picks",
+    path = "/v1/card/{id}", 
+    tag = "cards",
     responses(
-        (status = 200, body = PickResponse),
+        (status = 200, body = CardResponse),
         (status = 400)
     )
 )]
@@ -31,14 +31,14 @@ pub async fn get_by_id(
 ) -> Result<impl Responder> {
 	let id = Uuid::from_str(&id).map_err(|_| Error::BadRequest)?;
 
-    let out = justpic_cache::cache_wrapper::<PickResponse, Error, _, _>(
+    let out = justpic_cache::cache_wrapper::<CardResponse, Error, _, _>(
         &redis_pool, 
-        format!("pick:{id}"),
+        format!("card:{id}"),
         async move || {
-            let pick = DbPick::get_by_id_with_user(&id, &pool).await?
+            let card = Card::get_by_id_with_user(&id, &pool).await?
                 .ok_or(Error::NotFound)?;
 
-            let out = PickResponse::from(pick);
+            let out = CardResponse::from(card);
             Ok(out)
         }
     ).await?;

@@ -1,12 +1,12 @@
-use justpic_database::models::picks::{DbPick, PickWithUser, Status};
+use justpic_database::models::cards::{Card, CardWithUser, Status};
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-/// Upload 'pick' Dto
+/// Upload 'card' Dto
 #[derive(Debug, Deserialize, ToSchema)]
-pub struct UploadRequest {
+pub struct CreateCardRequest {
     #[schema(example = "Cute kitty!")]
     pub title: Option<String>,
     #[schema(example = "Awwwwww!")]
@@ -22,7 +22,7 @@ pub struct UploadRequest {
 }
 
 #[derive(Debug, Serialize, ToSchema, Clone, Deserialize)]
-pub struct PickOwner {
+pub struct CardOwner {
     pub id: Uuid,
     #[schema(example = "John Doe")]
     pub display_name: String,
@@ -32,7 +32,7 @@ pub struct PickOwner {
 }
 
 #[derive(Debug, Deserialize, Serialize, ToSchema, Clone)]
-pub struct PickResponse {
+pub struct CardResponse {
     pub id: Uuid,
     #[schema(example = "Cute cat!")]
     pub title: Option<String>,
@@ -53,15 +53,15 @@ pub struct PickResponse {
     pub nsfw: bool,
     #[schema(example = false)]
     pub deleted: bool,
-    #[schema(example = "/v1/picks/abc/file")]
+    #[schema(example = "abc.jpg")]
     pub file_url: Option<String>,
     #[schema(nullable = false)]
-    pub owner: Option<PickOwner>,
+    pub owner: Option<CardOwner>,
 }
 
-impl From<DbPick> for PickResponse {
-    fn from(value: DbPick) -> Self {
-        PickResponse {
+impl From<Card> for CardResponse {
+    fn from(value: Card) -> Self {
+        CardResponse {
             id: value.id,
             title: value.title,
             description: value.description,
@@ -79,16 +79,16 @@ impl From<DbPick> for PickResponse {
     }
 }
 
-impl From<PickWithUser> for PickResponse {
-    fn from(value: PickWithUser) -> Self {
-        let owner = PickOwner {
+impl From<CardWithUser> for CardResponse {
+    fn from(value: CardWithUser) -> Self {
+        let owner = CardOwner {
             id: value.user_id,
             display_name: value.user_display_name,
             username: value.user_username,
             avatar: value.user_avatar,
         };
 
-        PickResponse {
+        CardResponse {
             id: value.id,
             title: value.title,
             description: value.description,
