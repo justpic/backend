@@ -134,6 +134,20 @@ impl DbUser {
 
         DbUser::get_by_id(uid, pool).await
     }
+
+    pub async fn remove(&self, pool: &PgPool) -> Result<()> {
+        sqlx::query!(
+            "
+                DELETE FROM users
+                WHERE id = $1
+            ",
+            self.id
+        )
+        .execute(pool)
+        .await?;
+
+        Ok(())
+    }
 }
 
 /// Converts the username to the required format

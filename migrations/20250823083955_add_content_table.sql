@@ -7,7 +7,7 @@ CREATE TABLE cards (
 	source_url		TEXT,
 
 	created 			TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	owner_id 			UUID 		NOT NULL REFERENCES users(id) ON DELETE SET NULL,
+	owner_id 			UUID 				REFERENCES users(id) ON DELETE SET NULL,
 
 	mimetype			VARCHAR(255) NOT NULL DEFAULT 'bin',
 

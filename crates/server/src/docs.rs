@@ -19,6 +19,7 @@ use crate::routes::v1;
 		v1::users::get_me_cards::get_me_cards,
 		v1::users::get_me_sessions::get_me_sessions,
 		v1::users::get_by_username::get_by_username,
+		v1::users::delete_me::delete_me,
 
 		v1::cards::create::create,
 		v1::cards::get_by_id::get_by_id,

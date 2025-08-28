@@ -18,7 +18,7 @@ pub struct Card {
     pub source_url: Option<String>,
 
     pub created: OffsetDateTime,
-    pub owner_id: Uuid,
+    pub owner_id: Option<Uuid>,
 
     pub mimetype: String,
 
@@ -39,7 +39,7 @@ pub struct CardWithUser {
     pub description: Option<String>,
     pub source_url: Option<String>,
     pub created: OffsetDateTime,
-    pub owner_id: Uuid,
+    pub owner_id: Option<Uuid>,
     pub mimetype: String,
     pub status: Status,
     pub file_url: Option<String>,
@@ -76,7 +76,7 @@ impl Card {
             description: description.map(|v| v.into()),
             source_url: source_url.map(|v| v.into()),
             created: OffsetDateTime::now_utc(),
-            owner_id,
+            owner_id: Some(owner_id),
             mimetype: mimetype.into(),
             status: Status::Pending,
             file_url: None,

@@ -8,14 +8,14 @@ use crate::error::{Error, Result};
 /// Get user by username
 #[utoipa::path(
     get, 
-    path = "/v1/users/name/{username}", 
+    path = "/v1/users/{username}", 
     tag = "users",
     responses(
         (status = 200, body = UserResponse),
         (status = 404)
     )
 )]
-#[get("/name/{username}")]
+#[get("/{username}")]
 pub async fn get_by_username(
     pool: web::Data<postgres::Pool>,
     redis_pool: web::Data<justpic_cache::Pool>,
