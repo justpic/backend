@@ -7,16 +7,23 @@ assignees: ''
 
 ---
 
-### Endpoint
+### 🛣️ Endpoint
 `[GET] /ping`
 
-### Request (opt)
+### 📤 Request (opt)
+- Body:
+- Query:
+- Headers:
 
-### Response (opt)
+### 📥 Response (opt)
+- Codes;
+- Body:
 
-### Description
+### 📝 Description
+Краткое описание модуля
 
-### References (opt)
+### 🔗 References (opt)
+Ссылки на референсы, документы, issues
 
-### Tasks (opt)
+### ✅ Tasks (opt)
 - [ ] Task #1
