@@ -73,11 +73,3 @@ pub struct RegisterRequest {
     #[validate(length(min = 3, max = 128))]
     pub username: String,
 }
-
-/// Change username DTO
-#[derive(Clone, Deserialize, Validate, ToSchema)]
-pub struct ChangeUsernameRequest {
-    #[schema(example = "not_john_doe")]
-    #[validate(length(min = 3, max = 128))]
-    pub username: String,
-}

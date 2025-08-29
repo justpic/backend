@@ -21,7 +21,7 @@ use crate::{
     )
 )]
 #[get("/me/cards")]
-pub async fn fetch(
+pub async fn fetch_self_cards(
     req: HttpRequest,
     pool: web::Data<postgres::Pool>,
     redis_pool: web::Data<justpic_cache::Pool>,

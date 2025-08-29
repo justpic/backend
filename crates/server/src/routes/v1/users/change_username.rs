@@ -1,14 +1,23 @@
 use actix_web::{patch, web::{self, Json}, HttpRequest, HttpResponse, Responder};
 use justpic_database::{
     models::{roles::Role, users::DbUser},
-    postgres,
+    postgres, DatabaseError,
 };
-use justpic_models::api::users::{ChangeUsernameRequest, UserSelfResponse};
+use justpic_models::{api::users::UserSelfResponse, Validate};
+use serde::Deserialize;
+use utoipa::ToSchema;
 
 use crate::{
     auth::extract,
     error::{Error, Result},
 };
+
+#[derive(Clone, Deserialize, Validate, ToSchema)]
+pub struct ChangeUsernameRequest {
+    #[schema(example = "not_john_doe")]
+    #[validate(length(min = 3, max = 128))]
+    pub username: String,
+}
 
 /// Change current user name
 #[utoipa::path(
@@ -28,23 +37,21 @@ pub async fn change_username(
     redis_pool: web::Data<justpic_cache::Pool>,
 		payload: Json<ChangeUsernameRequest>
 ) -> Result<impl Responder> {
-    // Getting user session from request
     let session =
         extract::get_session_from_request(&req, Role::Regular, &pool, &redis_pool).await?;
 
-		let new_username = payload.into_inner().username;
+	let new_username = payload.into_inner().username;
 
     let mut user = DbUser::get_by_session(&session, &pool)
         .await?
         .ok_or(Error::Unauthorized)?;
-		user.username = new_username;
+    let user_cache_key = format!("user:{}", user.username);
 
-		// Conflict checking
+	user.username = new_username;
+    user.update(&pool).await?;
 
-		// Cache invalidation
+    justpic_cache::remove_from_cache(user_cache_key, &redis_pool).await?;
 
-    // Cleaning up the database model for serving to the Api
     let user_out = UserSelfResponse::from(user);
-
     Ok(HttpResponse::Ok().json(user_out))
 }

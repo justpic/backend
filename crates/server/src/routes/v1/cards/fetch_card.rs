@@ -15,7 +15,7 @@ use crate::{
 /// Get card by id
 #[utoipa::path(
     get, 
-    path = "/v1/card/{id}", 
+    path = "/v1/cards/{id}", 
     tag = "cards",
     responses(
         (status = 200, body = CardResponse),
@@ -23,7 +23,7 @@ use crate::{
     )
 )]
 #[get("/{id}")]
-pub async fn fetch(
+pub async fn fetch_card(
     req: HttpRequest,
     pool: web::Data<postgres::Pool>,
     id: web::Path<String>,

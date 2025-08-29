@@ -16,7 +16,7 @@ use crate::error::{Error, Result};
     )
 )]
 #[get("/{username}")]
-pub async fn fetch(
+pub async fn fetch_user(
     pool: web::Data<postgres::Pool>,
     redis_pool: web::Data<justpic_cache::Pool>,
     username: web::Path<(String,)>,

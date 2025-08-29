@@ -130,6 +130,30 @@ impl DbUser {
         DbUser::get_by_id(uid, pool).await
     }
 
+    pub async fn update(&self, pool: &PgPool) -> Result<()> {
+        sqlx::query!(
+            "
+            UPDATE users
+            SET email = $1, 
+                password = $2, 
+                username = $3, 
+                avatar_url = $4, 
+                banner_url = $5
+            WHERE id = $6
+        ",
+            self.email,
+            self.password,
+            self.username,
+            self.avatar_url,
+            self.banner_url,
+            self.id,
+        )
+        .execute(pool)
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn remove(&self, pool: &PgPool) -> Result<()> {
         sqlx::query!(
             "

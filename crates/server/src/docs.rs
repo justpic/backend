@@ -17,16 +17,18 @@ use crate::routes::v1;
 		v1::auth::logout::logout,
 		
 		// User model endpoints
-		v1::users::fetch_self::fetch,
-		v1::users::fetch_self_cards::fetch,
-		v1::users::fetch_self_sessions::fetch,
-		v1::users::fetch_user::fetch,
+		v1::users::fetch_self::fetch_self,
+		v1::users::fetch_self_cards::fetch_self_cards,
+		v1::users::fetch_self_sessions::fetch_self_sessions,
+		v1::users::fetch_user::fetch_user,
+
+		v1::users::change_username::change_username,
 
 		v1::users::delete_self::delete_me,
 
 		// Card model endpoints
 		v1::cards::create::create,
-		v1::cards::fetch_card::fetch,
+		v1::cards::fetch_card::fetch_card,
 
 		// Files and Storage endpoints
 		v1::files::get_file::get_file,

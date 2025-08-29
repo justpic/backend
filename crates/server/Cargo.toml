@@ -28,3 +28,6 @@ utoipa = {workspace = true, features = ["actix_extras"]}
 utoipa-swagger-ui = {workspace = true, features = ["actix-web"]}
 
 uuid = {workspace = true, features = ["v4", "serde"]}
+
+serde = {workspace = true, features = ["derive"]}
+validator = {workspace = true, features = ["derive"]}

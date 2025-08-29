@@ -13,9 +13,10 @@ pub mod change_username;
 pub mod delete_self;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
-    cfg.service(fetch_self::fetch)
-        .service(fetch_user::fetch)
-        .service(fetch_self_sessions::fetch)
-        .service(fetch_self_cards::fetch)
+    cfg.service(fetch_self::fetch_self)
+        .service(fetch_user::fetch_user)
+        .service(fetch_self_sessions::fetch_self_sessions)
+        .service(fetch_self_cards::fetch_self_cards)
+        .service(change_username::change_username)
         .service(delete_self::delete_me);
 }
