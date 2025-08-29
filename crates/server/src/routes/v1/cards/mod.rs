@@ -1,8 +1,8 @@
 use actix_web::web;
 
 pub mod create;
-pub mod get_by_id;
+pub mod fetch_card;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
-    cfg.service(create::create).service(get_by_id::get_by_id);
+    cfg.service(create::create).service(fetch_card::fetch);
 }

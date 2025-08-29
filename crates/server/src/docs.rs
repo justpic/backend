@@ -11,19 +11,24 @@ use crate::routes::v1;
 		(name = "files")
 	),
 	paths(
+		// Auth endpoints
 		v1::auth::login::login,
 		v1::auth::register::register,
 		v1::auth::logout::logout,
+		
+		// User model endpoints
+		v1::users::fetch_self::fetch,
+		v1::users::fetch_self_cards::fetch,
+		v1::users::fetch_self_sessions::fetch,
+		v1::users::fetch_user::fetch,
 
-		v1::users::get_me::get_me,
-		v1::users::get_me_cards::get_me_cards,
-		v1::users::get_me_sessions::get_me_sessions,
-		v1::users::get_by_username::get_by_username,
-		v1::users::delete_me::delete_me,
+		v1::users::delete_self::delete_me,
 
+		// Card model endpoints
 		v1::cards::create::create,
-		v1::cards::get_by_id::get_by_id,
+		v1::cards::fetch_card::fetch,
 
+		// Files and Storage endpoints
 		v1::files::get_file::get_file,
 	)
 )]

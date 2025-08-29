@@ -1,6 +1,5 @@
 use actix_web::HttpRequest;
 use justpic_database::models::{roles::Role, sessions::DbSession, users::DbUser};
-use tracing::info;
 
 use crate::error::{Error, Result};
 
@@ -69,19 +68,4 @@ pub async fn get_session_from_request(
         }
         Role::Regular => Ok(db_session),
     }
-}
-
-pub async fn get_maybe_authorized_user(
-    req: &HttpRequest,
-    pool: &justpic_database::postgres::Pool,
-    redis_pool: &justpic_cache::Pool,
-) -> Result<Option<DbUser>> {
-    let db_session = get_maybe_session_from_request(req, redis_pool).await?;
-
-    let user = match db_session {
-        Some(s) => DbUser::get_by_id(&s.id, pool).await?,
-        None => None,
-    };
-
-    Ok(user)
 }

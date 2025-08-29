@@ -23,7 +23,7 @@ use crate::{
     )
 )]
 #[get("/{id}")]
-pub async fn get_by_id(
+pub async fn fetch(
     req: HttpRequest,
     pool: web::Data<postgres::Pool>,
     id: web::Path<String>,

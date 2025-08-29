@@ -69,8 +69,15 @@ pub struct RegisterRequest {
     #[validate(length(min = 8, max = 224))]
     pub password: String,
 
-    // todo!: add whitespaces and symbols validation
-    #[schema(example = "JohnDoe")]
+    #[schema(example = "john_doe")]
+    #[validate(length(min = 3, max = 128))]
+    pub username: String,
+}
+
+/// Change username DTO
+#[derive(Clone, Deserialize, Validate, ToSchema)]
+pub struct ChangeUsernameRequest {
+    #[schema(example = "not_john_doe")]
     #[validate(length(min = 3, max = 128))]
     pub username: String,
 }

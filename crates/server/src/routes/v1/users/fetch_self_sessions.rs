@@ -18,7 +18,7 @@ use crate::{auth::extract, error::Result};
     )
 )]
 #[get("/me/sessions")]
-pub async fn get_me_sessions(
+pub async fn fetch(
     req: HttpRequest,
     pool: web::Data<postgres::Pool>,
     redis_pool: web::Data<justpic_cache::Pool>,
