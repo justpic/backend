@@ -1,0 +1,38 @@
+use actix_web::{HttpRequest, HttpResponse, Responder, get, web};
+use justpic_database::{
+    models::{roles::Role, sessions::DbSession},
+    postgres,
+};
+use justpic_models::api::auth::SessionResponse;
+
+use crate::{auth::extract, error::Result};
+
+/// Get current user sessions list by session
+#[utoipa::path(
+    get, 
+    path = "/v1/users/me/sessions", 
+    tag = "users",
+    responses(
+        (status = 200, body = Vec<SessionResponse>),
+        (status = 400)
+    )
+)]
+#[get("/me/sessions")]
+pub async fn fetch_self_sessions(
+    req: HttpRequest,
+    pool: web::Data<postgres::Pool>,
+    redis_pool: web::Data<justpic_cache::Pool>,
+) -> Result<impl Responder> {
+    let session =
+        extract::get_session_from_request(&req, Role::Regular, &pool, &redis_pool).await?;
+
+    let user_id = session.user_id;
+
+    let sessions = DbSession::get_by_owner_id(user_id, &pool)
+        .await?
+        .into_iter()
+        .map(SessionResponse::from)
+        .collect::<Vec<SessionResponse>>();
+
+    Ok(HttpResponse::Ok().json(sessions))
+}

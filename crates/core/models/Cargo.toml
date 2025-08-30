@@ -1,0 +1,21 @@
+[package]
+name = "justpic-models"
+edition = "2024"
+version = "0.1.0"
+
+[dependencies]
+justpic-database = {path = "../database"}
+
+serde = {workspace = true, features = ["derive"]}
+serde_json = {workspace = true}
+
+time = { workspace = true, features = ["serde", "serde-human-readable"] }
+
+tracing = {workspace = true}
+
+uuid = {workspace = true, features = ["v4", "serde"]}
+
+derive_more = {workspace = true, features = ["from", "display"]}
+validator = {workspace = true, features = ["derive"]}
+
+utoipa = {workspace = true, features = ["actix_extras", "uuid", "time"]}
