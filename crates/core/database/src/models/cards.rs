@@ -136,6 +136,7 @@ impl Card {
                 FROM cards c
                 JOIN users u ON c.owner_id = u.id
                 WHERE c.id = $1
+                    AND c.deleted = false
             ",
             id
         )
@@ -193,6 +194,7 @@ impl Card {
                 FROM cards c
                 JOIN users u ON c.owner_id = u.id
                 WHERE c.owner_id = $1
+                    AND c.deleted = false
             ",
             owner_id
         )
@@ -203,9 +205,13 @@ impl Card {
     }
 
     pub async fn get_by_owner_id(owner_id: &Uuid, pool: &PgPool) -> Result<Vec<Card>> {
-        let items = sqlx::query_as!(Card, "SELECT * FROM cards WHERE owner_id = $1", owner_id)
-            .fetch_all(pool)
-            .await?;
+        let items = sqlx::query_as!(
+            Card,
+            "SELECT * FROM cards WHERE owner_id = $1 AND deleted = false",
+            owner_id
+        )
+        .fetch_all(pool)
+        .await?;
 
         Ok(items)
     }
@@ -252,6 +258,7 @@ impl Card {
 					UPDATE cards
 					SET deleted = true
 					WHERE id = $1
+                        AND deleted = false
 				",
             id
         )

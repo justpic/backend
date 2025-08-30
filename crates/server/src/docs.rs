@@ -32,6 +32,8 @@ use crate::routes::v1;
 		v1::cards::fetch_card::fetch_card,
 		v1::cards::fetch_list::fetch_list,
 
+		v1::cards::delete_card::delete_card,
+
 		// Files and Storage endpoints
 		v1::files::get_file::get_file,
 	)

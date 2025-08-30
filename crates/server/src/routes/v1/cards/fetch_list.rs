@@ -9,7 +9,7 @@ use crate::{
     auth::extract, error::{Result}
 };
 
-/// Get card by id
+/// Get cards list
 #[utoipa::path(
     get, 
     path = "/v1/cards/", 
