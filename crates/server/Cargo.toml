@@ -11,6 +11,7 @@ justpic-models = {path = "../core/models"}
 
 actix-web = {workspace = true}
 actix-multipart = "0.7.2"
+actix-cors = "0.7.1"
 
 tokio = {workspace = true, features = ["sync", "rt-multi-thread", "macros"]}
 tokio-util = "0.7.16"

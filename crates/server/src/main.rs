@@ -1,3 +1,4 @@
+use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use justpic_database::postgres;
 use tracing::info;
@@ -62,6 +63,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(state.pool.clone()))
             .app_data(web::Data::new(state.redis_pool.clone()))
             .app_data(web::Data::new(state.s3.clone()))
+            .wrap(Cors::permissive())
             .service(
                 SwaggerUi::new("/docs/{_:.*}")
                     .url("/api-docs/openapi.json", docs::ApiDoc::openapi()),
