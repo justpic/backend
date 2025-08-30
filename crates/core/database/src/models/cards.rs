@@ -145,6 +145,39 @@ impl Card {
         Ok(item)
     }
 
+    pub async fn get_many_with_user(
+        pool: &PgPool,
+        user_id: Option<Uuid>,
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<CardWithUser>> {
+        let items = sqlx::query_as!(
+            CardWithUser,
+            "
+            SELECT 
+	            c.*,
+	            u.id as user_id,
+	            u.username as user_username,
+	            u.avatar_url as user_avatar
+            FROM cards c
+            JOIN users u ON c.owner_id = u.id
+            WHERE c.deleted = false
+	        AND 
+  		        (c.private = false)
+            OR
+    	        (c.private = true AND c.owner_id = $1)
+            LIMIT $2 OFFSET $3
+            ",
+            user_id,
+            limit,
+            offset
+        )
+        .fetch_all(pool)
+        .await?;
+
+        Ok(items)
+    }
+
     pub async fn get_by_owner_id_with_user(
         owner_id: &Uuid,
         pool: &PgPool,

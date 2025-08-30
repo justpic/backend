@@ -28,7 +28,9 @@ use crate::routes::v1;
 
 		// Card model endpoints
 		v1::cards::create::create,
+
 		v1::cards::fetch_card::fetch_card,
+		v1::cards::fetch_list::fetch_list,
 
 		// Files and Storage endpoints
 		v1::files::get_file::get_file,
