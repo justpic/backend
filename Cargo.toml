@@ -1,0 +1,16 @@
+[workspace]
+resolver = "2"
+members = [
+	"crates/server/*",
+	"crates/core/*"
+]
+
+[profile.release]
+opt-level = "s"
+strip = true
+lto = true
+panic = "abort"
+codegen-units = 1
+
+[profile.dev.package.sqlx-macros]
+opt-level = 3

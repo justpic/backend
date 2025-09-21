@@ -1,0 +1,14 @@
+[package]
+name = "server"
+edition = "2024"
+version = "0.1.0"
+
+[dependencies]
+database = {path = "../../core/database"}
+cache = {path = "../../core/cache"}
+models = {path = "../../core/models"}
+storage = {path = "../../core/storage"}
+media = {path = "../../core/media"}
+auth = {path = "../../core/auth"}
+crypto = {path = "../../core/crypto"}
+utils = {path = "../../core/utils"}
