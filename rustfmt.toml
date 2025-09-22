@@ -1,0 +1,24 @@
+max_width = 100
+hard_tabs = false
+tab_spaces = 4
+newline_style = "Unix"
+
+blank_lines_upper_bound = 2
+
+reorder_imports = true
+reorder_modules = true
+group_imports = "StdExternalCrate"
+imports_granularity = "Module"
+
+wrap_comments = true
+normalize_comments = true
+
+format_strings = true
+
+use_field_init_shorthand = true
+
+struct_field_align_threshold = 20
+enum_discrim_align_threshold = 20
+
+control_brace_style = "AlwaysSameLine"
+brace_style = "SameLineWhere"
