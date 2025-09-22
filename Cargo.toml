@@ -5,6 +5,22 @@ members = [
 	"crates/core/*"
 ]
 
+[workspace.dependencies]
+# Futures
+tokio = "1.47.1"
+tokio-util = "0.7.16"
+async-trait = "0.1.89"
+
+# Ser De
+serde = {version = "1.0.219", features = ["derive"]}
+serde_json = "1.0.140"
+
+# Utils
+tracing = "0.1.40"
+derive_more = {version = "2.0.1", features = ["from", "display"]}
+time = "0.3.41"
+dotenvy = "0.15.7"
+
 [profile.release]
 opt-level = "s"
 strip = true

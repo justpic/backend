@@ -2,3 +2,9 @@
 name = "utils"
 edition = "2024"
 version = "0.1.0"
+
+[dependencies]
+# Utils
+derive_more.workspace = true
+tracing.workspace = true
+dotenvy.workspace = true

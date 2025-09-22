@@ -2,3 +2,22 @@
 name = "crypto"
 edition = "2024"
 version = "0.1.0"
+
+[dependencies]
+# Tokio (for multithreading)
+tokio = {workspace = true, features = ["sync", "rt-multi-thread"]}
+tokio-util.workspace = true
+
+# Hash
+argon2 = {version = "0.5.3", features = ["std"]}
+
+# B64
+base64 = "0.22.1"
+
+# Random
+rand = "0.9.2"
+
+# Utils
+derive_more.workspace = true
+tracing.workspace = true
+dotenvy.workspace = true

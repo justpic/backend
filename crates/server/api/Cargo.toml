@@ -4,6 +4,7 @@ edition = "2024"
 version = "0.1.0"
 
 [dependencies]
+# Core modules
 database = {path = "../../core/database"}
 cache = {path = "../../core/cache"}
 models = {path = "../../core/models"}
@@ -12,3 +13,23 @@ media = {path = "../../core/media"}
 auth = {path = "../../core/auth"}
 crypto = {path = "../../core/crypto"}
 utils = {path = "../../core/utils"}
+
+# Actix
+actix-web = "4.11.0"
+actix-multipart = "0.7.2"
+actix-cors = "0.7.1"
+
+# OpenApi
+utoipa = {version = "5.4.0", features = ["actix_extras"]}
+utoipa-swagger-ui = {version = "9.0.2", features = ["actix-web"]}
+
+# Futures
+tokio = {workspace = true, features = ["sync", "rt-multi-thread", "macros"]}
+tokio-util.workspace = true
+
+# Logging
+tracing.workspace = true
+tracing-subscriber = {version = "0.3.18", features = ["env-filter"]}
+
+# Utils
+derive_more.workspace = true

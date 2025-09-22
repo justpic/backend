@@ -2,3 +2,18 @@
 name = "storage"
 edition = "2024"
 version = "0.1.0"
+
+[dependencies]
+# S3
+aws-sdk-s3 = {version = "1.103.0", features = ["behavior-version-latest"]}
+aws-config = { version = "1.1.7", features = ["behavior-version-latest"] }
+
+# Futures
+tokio = {workspace = true, features = ["sync", "rt-multi-thread"]}
+tokio-util.workspace = true
+async-trait.workspace = true
+
+# Utils
+derive_more.workspace = true
+tracing.workspace = true
+dotenvy.workspace = true

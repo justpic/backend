@@ -2,3 +2,16 @@
 name = "cache"
 edition = "2024"
 version = "0.1.0"
+
+[dependencies]
+# Redis
+deadpool-redis = "0.22.0"
+
+# Ser De
+serde.workspace = true
+serde_json.workspace = true
+
+# Utils
+derive_more.workspace = true
+tracing.workspace = true
+dotenvy.workspace = true
