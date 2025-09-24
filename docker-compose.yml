@@ -1,0 +1,19 @@
+name: justpic-backend
+
+volumes:
+  db_data:
+  cache_data:
+  storage_data:
+
+services:
+  database:
+    container_name: justpic-database
+    image: postgres:17.6-alpine
+    ports:
+      - 5433:5432
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+      POSTGRES_DB: ${DATABASE_NAME}
